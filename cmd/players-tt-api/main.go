@@ -84,6 +84,11 @@ func main() {
 	var port = cfg.Mqtt.Port
 	var broker = fmt.Sprintf("tcp://%s:%d", host, port)
 	f.DebugVerbose("Broker: %s", broker)
+	f.DebugVerbose("BuildID: %s", utils.BuildID())
+	f.DebugVerbose("BuildDate: %s", utils.BuildDate())
+	f.DebugVerbose("GitCommit: %s", utils.GitCommit())
+	f.DebugVerbose("GitBranch: %s", utils.GitBranch())
+	f.DebugVerbose("GitURL: %s", utils.GitURL())
 
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(broker)
