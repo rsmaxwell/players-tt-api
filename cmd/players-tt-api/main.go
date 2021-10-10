@@ -9,6 +9,7 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 
+	"github.com/rsmaxwell/players-tt-api/internal/basic"
 	"github.com/rsmaxwell/players-tt-api/internal/config"
 	"github.com/rsmaxwell/players-tt-api/internal/debug"
 	"github.com/rsmaxwell/players-tt-api/internal/mqtthandler"
@@ -84,11 +85,11 @@ func main() {
 	var port = cfg.Mqtt.Port
 	var broker = fmt.Sprintf("tcp://%s:%d", host, port)
 	f.DebugVerbose("Broker: %s", broker)
-	f.DebugVerbose("BuildID: %s", utils.BuildID())
-	f.DebugVerbose("BuildDate: %s", utils.BuildDate())
-	f.DebugVerbose("GitCommit: %s", utils.GitCommit())
-	f.DebugVerbose("GitBranch: %s", utils.GitBranch())
-	f.DebugVerbose("GitURL: %s", utils.GitURL())
+	f.DebugVerbose("Version: %s", basic.Version())
+	f.DebugVerbose("BuildDate: %s", basic.BuildDate())
+	f.DebugVerbose("GitCommit: %s", basic.GitCommit())
+	f.DebugVerbose("GitBranch: %s", basic.GitBranch())
+	f.DebugVerbose("GitURL: %s", basic.GitURL())
 
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(broker)
