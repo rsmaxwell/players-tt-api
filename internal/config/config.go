@@ -3,9 +3,7 @@ package config
 import (
 	"database/sql"
 	"encoding/json"
-	"flag"
 	"io/ioutil"
-	"path/filepath"
 	"time"
 
 	"github.com/rsmaxwell/players-tt-api/internal/debug"
@@ -65,18 +63,11 @@ var (
 )
 
 // Setup function
-func Setup() (*sql.DB, *Config, error) {
+func Setup(configFileName string) (*sql.DB, *Config, error) {
 	f := functionSetup
 
-	// Find the configuration file
-	rootDir := debug.RootDir()
-	defaultConfigFile := filepath.Join(rootDir, "config", "config.json")
-	configFileName := flag.String("config", defaultConfigFile, "configuration filename")
-
-	flag.Parse()
-
 	// Read the configuration file
-	c, err := Open(*configFileName)
+	c, err := Open(configFileName)
 	if err != nil {
 		message := "Could not open configuration"
 		f.Errorf(message)

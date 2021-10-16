@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
 	"testing"
 
+	"github.com/rsmaxwell/players-tt-api/internal/cmdline"
 	"github.com/rsmaxwell/players-tt-api/internal/config"
 	"github.com/rsmaxwell/players-tt-api/internal/debug"
 )
@@ -39,8 +41,14 @@ func Setup(t *testing.T) (func(t *testing.T), *sql.DB, *config.Config) {
 	f := functionSetup
 	ctx := context.Background()
 
+	args, err := cmdline.GetArguments()
+	if err != nil {
+		f.Errorf("Error setting up")
+		os.Exit(1)
+	}
+
 	// Read configuration
-	db, c, err := config.Setup()
+	db, c, err := config.Setup(args.Configfile)
 	if err != nil {
 		f.Errorf("Error setting up")
 		t.FailNow()

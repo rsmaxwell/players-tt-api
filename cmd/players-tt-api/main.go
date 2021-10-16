@@ -10,6 +10,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 
 	"github.com/rsmaxwell/players-tt-api/internal/basic"
+	"github.com/rsmaxwell/players-tt-api/internal/cmdline"
 	"github.com/rsmaxwell/players-tt-api/internal/config"
 	"github.com/rsmaxwell/players-tt-api/internal/debug"
 	"github.com/rsmaxwell/players-tt-api/internal/mqtthandler"
@@ -73,8 +74,13 @@ func main() {
 	f := functionMain
 	f.Verbosef("Read configuration and connect to the database")
 
-	var err error
-	db, cfg, err = config.Setup()
+	args, err := cmdline.GetArguments()
+	if err != nil {
+		f.Errorf("Error setting up")
+		os.Exit(1)
+	}
+
+	db, cfg, err = config.Setup(args.Configfile)
 	if err != nil {
 		f.Errorf("Error setting up")
 		os.Exit(1)
