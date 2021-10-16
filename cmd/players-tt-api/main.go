@@ -80,6 +80,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	if args.Version {
+		fmt.Printf("Version: %s\n", basic.Version())
+		fmt.Printf("BuildDate: %s\n", basic.BuildDate())
+		fmt.Printf("GitCommit: %s\n", basic.GitCommit())
+		fmt.Printf("GitBranch: %s\n", basic.GitBranch())
+		fmt.Printf("GitURL: %s\n", basic.GitURL())
+		os.Exit(0)
+	}
+
 	db, cfg, err = config.Setup(args.Configfile)
 	if err != nil {
 		f.Errorf("Error setting up")
@@ -91,11 +100,6 @@ func main() {
 	var port = cfg.Mqtt.Port
 	var broker = fmt.Sprintf("tcp://%s:%d", host, port)
 	f.DebugVerbose("Broker: %s", broker)
-	f.DebugVerbose("Version: %s", basic.Version())
-	f.DebugVerbose("BuildDate: %s", basic.BuildDate())
-	f.DebugVerbose("GitCommit: %s", basic.GitCommit())
-	f.DebugVerbose("GitBranch: %s", basic.GitBranch())
-	f.DebugVerbose("GitURL: %s", basic.GitURL())
 
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(broker)

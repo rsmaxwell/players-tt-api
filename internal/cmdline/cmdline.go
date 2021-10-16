@@ -14,7 +14,8 @@ var (
 
 // Config type
 type CommandlineArguments struct {
-	Configfile string `json:"configfile"`
+	Configfile string
+	Version    bool
 }
 
 func GetArguments() (CommandlineArguments, error) {
@@ -25,10 +26,13 @@ func GetArguments() (CommandlineArguments, error) {
 	defaultConfigFile := filepath.Join(rootDir, "config", "config.json")
 	configfile := flag.String("config", defaultConfigFile, "configuration filename")
 
+	version := flag.Bool("version", false, "display the version")
+
 	flag.Parse()
 
-	var commandlineArguments CommandlineArguments
-	commandlineArguments.Configfile = *configfile
+	var args CommandlineArguments
+	args.Configfile = *configfile
+	args.Version = *version
 
-	return commandlineArguments, nil
+	return args, nil
 }
