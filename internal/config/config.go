@@ -105,7 +105,7 @@ func Open(configFileName *string) (*Config, error) {
 
 	bytearray, err := ioutil.ReadFile(*configFileName)
 	if err != nil {
-		f.Dump("could not read config file: %s", configFileName)
+		f.Dump("could not read config file: %s", *configFileName)
 		return nil, err
 	}
 
