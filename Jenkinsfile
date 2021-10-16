@@ -5,12 +5,14 @@ pipeline {
         stage('prepare') {
             steps {
                 echo 'preparing the application'
-                checkout([
-                    $class: 'GitSCM', 
-                    branches: [[name: '*/main']], 
-                    extensions: [], 
-                    userRemoteConfigs: [[url: 'https://github.com/rsmaxwell/players-tt-api']]
-                ])
+                dir('subDir') {
+                    checkout([
+                        $class: 'GitSCM', 
+                        branches: [[name: '*/main']], 
+                        extensions: [], 
+                        userRemoteConfigs: [[url: 'https://github.com/rsmaxwell/players-tt-api']]
+                    ])
+                }
             }
         }
 
