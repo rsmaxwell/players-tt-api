@@ -5,7 +5,7 @@ pipeline {
         stage('prepare') {
             steps {
                 echo 'preparing the application'
-                dir('subDir') {
+                dir('src/github.com/rsmaxwell/players-tt-api') {
                     checkout([
                         $class: 'GitSCM', 
                         branches: [[name: '*/main']], 
