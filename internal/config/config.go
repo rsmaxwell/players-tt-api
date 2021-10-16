@@ -73,8 +73,10 @@ func Setup() (*sql.DB, *Config, error) {
 	defaultConfigFile := filepath.Join(rootDir, "config", "config.json")
 	configFileName := flag.String("config", defaultConfigFile, "configuration filename")
 
+	flag.Parse()
+
 	// Read the configuration file
-	c, err := Open(configFileName)
+	c, err := Open(*configFileName)
 	if err != nil {
 		message := "Could not open configuration"
 		f.Errorf(message)
@@ -100,12 +102,12 @@ func Setup() (*sql.DB, *Config, error) {
 }
 
 // Open returns the configuration
-func Open(configFileName *string) (*Config, error) {
+func Open(configFileName string) (*Config, error) {
 	f := functionOpen
 
-	bytearray, err := ioutil.ReadFile(*configFileName)
+	bytearray, err := ioutil.ReadFile(configFileName)
 	if err != nil {
-		f.Dump("could not read config file: %s", *configFileName)
+		f.Dump("could not read config file: %s", configFileName)
 		return nil, err
 	}
 
