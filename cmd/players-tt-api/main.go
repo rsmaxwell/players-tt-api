@@ -72,7 +72,6 @@ var requestID = 0
 
 func main() {
 	f := functionMain
-	f.Verbosef("Read configuration and connect to the database")
 
 	args, err := cmdline.GetArguments()
 	if err != nil {
