@@ -74,7 +74,7 @@ func init() {
 	defaultPackageLevel, _ = basic.GetEnvInteger("DEBUG_DEFAULT_PACKAGE_LEVEL", InfoLevel)
 	defaultFunctionLevel, _ = basic.GetEnvInteger("DEBUG_DEFAULT_FUNCTION_LEVEL", InfoLevel)
 
-	path, ok := os.LookupEnv("DEBUG_DUMP_DIR")
+	path, ok := os.LookupEnv("PLAYERS_TT_API_ROOT_DIR")
 	if !ok {
 		callinfo, ok := basic.GetCallInfo(1)
 		if !ok {
