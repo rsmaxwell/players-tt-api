@@ -113,7 +113,7 @@ func main() {
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		err := token.Error()
 		f.DebugVerbose(err.Error())
-		f.DumpError(err, "Could not connect")
+		f.DumpError(err, "Could not connect to the mqtt broker on %s", broker)
 		return
 	}
 
