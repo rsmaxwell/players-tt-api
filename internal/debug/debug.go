@@ -566,7 +566,7 @@ func (f *Function) DumpError(err error, format string, a ...interface{}) *Dump {
 		filename := filepath.Join(d.Directory, "error.json")
 		err = ioutil.WriteFile(filename, data, 0644)
 		if err != nil {
-			f.Errorf("could not write error to dump\n")
+			f.Errorf("could not write error to dump: %s\n", filename)
 		}
 	}
 
