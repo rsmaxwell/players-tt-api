@@ -62,7 +62,7 @@ var (
 	defaultPackageLevel  int
 	defaultFunctionLevel int
 	rootDir              string
-	xrootDumpDir         string
+	rootDumpDir          string
 	dumpFields           map[string]string
 	dumpGroupID          string
 	dumpArtifact         string
@@ -74,7 +74,8 @@ func init() {
 	defaultPackageLevel, _ = basic.GetEnvInteger("DEBUG_DEFAULT_PACKAGE_LEVEL", InfoLevel)
 	defaultFunctionLevel, _ = basic.GetEnvInteger("DEBUG_DEFAULT_FUNCTION_LEVEL", InfoLevel)
 
-	rootDir, ok := os.LookupEnv("PLAYERS_TT_API_ROOT_DIR")
+	var ok bool
+	rootDir, ok = os.LookupEnv("PLAYERS_TT_API_ROOT_DIR")
 	if !ok {
 		callinfo, ok := basic.GetCallInfo(1)
 		if !ok {
@@ -83,7 +84,7 @@ func init() {
 		rootDir = filepath.Join(basic.HomeDir(), callinfo.ProjectName)
 	}
 
-	rootDumpDir, ok := os.LookupEnv("PLAYERS_TT_API_DUMP_DIR")
+	rootDumpDir, ok = os.LookupEnv("PLAYERS_TT_API_DUMP_DIR")
 	if !ok {
 		rootDumpDir = filepath.Join(rootDir, "dump")
 	}
@@ -96,11 +97,6 @@ func init() {
 
 // RootDir returns the application root dir
 func RootDir() string {
-	return rootDir
-}
-
-// RootDumpDir returns the directory where dumps are written
-func RootDumpDir() string {
 	return rootDir
 }
 
