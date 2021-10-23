@@ -3,6 +3,7 @@ package config
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"time"
 
@@ -83,7 +84,7 @@ func Setup(configFileName string) (*sql.DB, *Config, error) {
 
 	db, err := sql.Open(driverName, connectionString)
 	if err != nil {
-		message := "Could not connect to the database"
+		message := fmt.Sprintf("Could not connect to the database: driverName: %s, connectionString:%s", driverName, connectionString)
 		f.Errorf(message)
 		f.DumpError(err, message)
 		return nil, nil, err
