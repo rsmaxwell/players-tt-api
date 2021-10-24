@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/rsmaxwell/players-tt-api/internal/debug"
@@ -99,14 +100,22 @@ func Open(configFileName string) (*Config, error) {
 
 	bytearray, err := ioutil.ReadFile(configFileName)
 	if err != nil {
-		f.Dump("could not read config file: %s", configFileName)
+		d := f.DumpError(err, "could not read config file: %s", configFileName)
+
+		stats, err := os.Stat(configFileName)
+		if err != nil {
+			d.AddString("fileinfo", fmt.Sprintf("%s", err))
+		} else {
+			d.AddObject("fileinfo", stats)
+		}
+
 		return nil, err
 	}
 
 	var configFile ConfigFile
 	err = json.Unmarshal(bytearray, &configFile)
 	if err != nil {
-		f.Dump("could not Unmarshal configuration")
+		f.DumpError(err, "could not Unmarshal configuration")
 		return nil, err
 	}
 

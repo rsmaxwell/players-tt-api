@@ -34,5 +34,8 @@ func GetArguments() (CommandlineArguments, error) {
 	args.Configfile = *configfile
 	args.Version = *version
 
+	f.DebugVerbose("args.Configfile: %s", args.Configfile)
+	f.DebugVerbose("args.Version: %t", args.Version)
+
 	return args, nil
 }
