@@ -97,6 +97,7 @@ func Setup(configFileName string) (*sql.DB, *Config, error) {
 // Open returns the configuration
 func Open(configFileName string) (*Config, error) {
 	f := functionOpen
+	f.DebugVerbose("configFileName: %s", configFileName)
 
 	bytearray, err := ioutil.ReadFile(configFileName)
 	if err != nil {
@@ -104,9 +105,9 @@ func Open(configFileName string) (*Config, error) {
 
 		stats, err := os.Stat(configFileName)
 		if err != nil {
-			d.AddString("fileinfo", fmt.Sprintf("%s", err))
+			d.AddString("fileinfo.txt", fmt.Sprintf("%s\n", err))
 		} else {
-			d.AddObject("fileinfo", stats)
+			d.AddObject("fileinfo.json", stats)
 		}
 
 		return nil, err
