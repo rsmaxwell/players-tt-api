@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx"
 	"github.com/rsmaxwell/players-tt-api/internal/config"
 	"github.com/rsmaxwell/players-tt-api/internal/debug"
 )
@@ -46,8 +47,12 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 		return nil, err
 	}
 
-	err = databaseCheck(db)
-	if err == nil {
+	ok, err := databaseCheck(db)
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
+	if ok {
 		return db, nil
 	}
 
@@ -67,7 +72,7 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 		return nil, err
 	}
 
-	ok, err := databaseExists(db, cfg.Database.DatabaseName)
+	ok, err = databaseExists(db, cfg.Database.DatabaseName)
 	if err != nil {
 		message := fmt.Sprintf("Problem checking the database '%s' exists", cfg.Database.DatabaseName)
 		f.Errorf(message)
@@ -100,8 +105,12 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 		return nil, err
 	}
 
-	err = databaseCheck(db)
+	ok, err = databaseCheck(db)
 	if err != nil {
+		db.Close()
+		return nil, err
+	}
+	if !ok {
 		err = initialiseDatabaseTx(db)
 		if err != nil {
 			message := fmt.Sprintf("Problem initialising the database '%s'", cfg.Database.DatabaseName)
@@ -111,9 +120,14 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 		}
 	}
 
-	err = databaseCheck(db)
+	ok, err = databaseCheck(db)
 	if err != nil {
+		db.Close()
 		return nil, err
+	}
+	if !ok {
+		db.Close()
+		return nil, fmt.Errorf("problem initialising database")
 	}
 
 	return db, nil
@@ -388,7 +402,7 @@ func databaseExists(db *sql.DB, databaseName string) (bool, error) {
 	return (count > 0), nil
 }
 
-func databaseCheck(db *sql.DB) error {
+func databaseCheck(db *sql.DB) (bool, error) {
 	f := functionDatabaseCheck
 	f.DebugVerbose("")
 
@@ -396,7 +410,22 @@ func databaseCheck(db *sql.DB) error {
 	sqlStatement := "SELECT COUNT(*) FROM " + CourtTable
 	err := db.QueryRow(sqlStatement).Scan(&count)
 
-	return err
+	ok := true
+	if err != nil {
+		if err2, ok2 := err.(pgx.PgError); ok2 {
+			if err2.Code == Invalid_Catalog_Name {
+				ok = false
+				err = nil
+			} else if err2.Code == Undefined_Table {
+				ok = false
+				err = nil
+			} else {
+				ok = false
+			}
+		}
+	}
+
+	return ok, err
 }
 
 func createDatabase(db *sql.DB, databaseName string) error {
