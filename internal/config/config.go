@@ -1,7 +1,6 @@
 package config
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -59,40 +58,9 @@ type Config struct {
 }
 
 var (
-	pkg           = debug.NewPackage("config")
-	functionOpen  = debug.NewFunction(pkg, "Open")
-	functionSetup = debug.NewFunction(pkg, "Setup")
+	pkg          = debug.NewPackage("config")
+	functionOpen = debug.NewFunction(pkg, "Open")
 )
-
-// Setup function
-func Setup(configFileName string) (*sql.DB, *Config, error) {
-	f := functionSetup
-
-	// Read the configuration file
-	c, err := Open(configFileName)
-	if err != nil {
-		message := "Could not open configuration"
-		f.Errorf(message)
-		f.DumpError(err, message)
-		return nil, nil, err
-	}
-
-	// Connect to the database
-	driverName := c.DriverName()
-	connectionString := c.ConnectionString()
-	f.DebugVerbose("driverName: %s", driverName)
-	f.DebugVerbose("connectionString: %s", connectionString)
-
-	db, err := sql.Open(driverName, connectionString)
-	if err != nil {
-		message := fmt.Sprintf("Could not connect to the database: driverName: %s, connectionString:%s", driverName, connectionString)
-		f.Errorf(message)
-		f.DumpError(err, message)
-		return nil, nil, err
-	}
-
-	return db, c, nil
-}
 
 // Open returns the configuration
 func Open(configFileName string) (*Config, error) {

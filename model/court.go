@@ -105,7 +105,7 @@ func (c *Court) SaveCourtTx(db *sql.DB) error {
 	err = c.SaveCourt(ctx, db)
 	if err != nil {
 		tx.Rollback()
-		message := "Could not begin a new transaction"
+		message := "Could not SaveCourt"
 		f.DumpError(err, message)
 		return err
 	}

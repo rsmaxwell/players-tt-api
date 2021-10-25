@@ -20,7 +20,7 @@ type CommandlineArguments struct {
 
 func GetArguments() (CommandlineArguments, error) {
 	f := functionGetArguments
-	f.Verbosef("Get the comandline arguments")
+	f.DebugVerbose("Get the comandline arguments")
 
 	rootDir := debug.RootDir()
 	defaultConfigFile := filepath.Join(rootDir, "config", "config.json")

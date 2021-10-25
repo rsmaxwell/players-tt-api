@@ -8,6 +8,7 @@ import (
 	"github.com/rsmaxwell/players-tt-api/internal/cmdline"
 	"github.com/rsmaxwell/players-tt-api/internal/config"
 	"github.com/rsmaxwell/players-tt-api/internal/debug"
+	"github.com/rsmaxwell/players-tt-api/model"
 
 	_ "github.com/jackc/pgx/stdlib"
 )
@@ -42,12 +43,18 @@ func main() {
 
 	f.Infof("Players CreateDB: Version: %s", basic.Version())
 
-	// Read configuration and connect to the database
-	db, _, err := config.Setup(args.Configfile)
+	// Read configuration
+	cfg, err := config.Open(args.Configfile)
 	if err != nil {
 		message := "Error setting up"
 		f.Errorf(message)
 		f.DumpError(err, message)
+		os.Exit(1)
+	}
+
+	db, err := model.Connect(cfg)
+	if err != nil {
+		f.Errorf("Error Connecting to the database up")
 		os.Exit(1)
 	}
 	defer db.Close()

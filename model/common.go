@@ -48,11 +48,18 @@ func Setup(t *testing.T) (func(t *testing.T), *sql.DB, *config.Config) {
 	}
 
 	// Read configuration
-	db, c, err := config.Setup(args.Configfile)
+	cfg, err := config.Open(args.Configfile)
 	if err != nil {
 		f.Errorf("Error setting up")
 		t.FailNow()
 	}
+
+	db, err := Connect(cfg)
+	if err != nil {
+		f.Errorf("Error Connecting to the database up")
+		os.Exit(1)
+	}
+	defer db.Close()
 
 	// Delete all the records
 	err = DeleteAllRecords(ctx, db)
@@ -70,7 +77,7 @@ func Setup(t *testing.T) (func(t *testing.T), *sql.DB, *config.Config) {
 
 	return func(t *testing.T) {
 		db.Close()
-	}, db, c
+	}, db, cfg
 }
 
 // DeleteAllRecords removes all the records in the database

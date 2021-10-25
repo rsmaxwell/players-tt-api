@@ -48,10 +48,15 @@ func main() {
 
 	f.Infof("Players Populate: Version: %s", basic.Version())
 
-	// Read configuration and connect to the database
-	db, c, err := config.Setup(args.Configfile)
+	cfg, err := config.Open(args.Configfile)
 	if err != nil {
 		f.Errorf("Error setting up")
+		os.Exit(1)
+	}
+
+	db, err := model.Connect(cfg)
+	if err != nil {
+		f.Errorf("Error Connecting to the database up")
 		os.Exit(1)
 	}
 	defer db.Close()
@@ -64,5 +69,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Successfully delete all the records in the database: %s\n", c.Database.DatabaseName)
+	fmt.Printf("Successfully delete all the records in the database: %s\n", cfg.Database.DatabaseName)
 }

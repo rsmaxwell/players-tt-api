@@ -16,6 +16,8 @@ import (
 	"github.com/rsmaxwell/players-tt-api/internal/mqtthandler"
 	"github.com/rsmaxwell/players-tt-api/internal/publisher"
 	"github.com/rsmaxwell/players-tt-api/internal/utils"
+
+	"github.com/rsmaxwell/players-tt-api/model"
 )
 
 var (
@@ -88,9 +90,15 @@ func main() {
 		os.Exit(0)
 	}
 
-	db, cfg, err = config.Setup(args.Configfile)
+	cfg, err = config.Open(args.Configfile)
 	if err != nil {
-		f.Errorf("Error setting up")
+		f.Errorf("Error opening config: %s", args.Configfile)
+		os.Exit(1)
+	}
+
+	db, err = model.Connect(cfg)
+	if err != nil {
+		f.Errorf("Error Connecting to the database up")
 		os.Exit(1)
 	}
 	defer db.Close()
