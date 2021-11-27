@@ -316,14 +316,15 @@ func createAdminUser(ctx context.Context, db *sql.DB) error {
 
 		peopleIDs[i] = p.ID
 
-		fmt.Printf("Added person:\n")
-		fmt.Printf("    FirstName: %s\n", p.FirstName)
-		fmt.Printf("    LastName:  %s\n", p.LastName)
-		fmt.Printf("    Knownas:   %s\n", p.Knownas)
-		fmt.Printf("    Email:     %s\n", p.Email)
-		fmt.Printf("    Password:  %s\n", r.Password)
-		fmt.Printf("    Hash:      %s\n", p.Hash)
-		fmt.Printf("    Status:    %s\n", p.Status)
+		f.DebugInfo("Added person:")
+		f.DebugInfo("    ID:        %d", p.ID)
+		f.DebugInfo("    FirstName: %s", p.FirstName)
+		f.DebugInfo("    LastName:  %s", p.LastName)
+		f.DebugInfo("    Knownas:   %s", p.Knownas)
+		f.DebugInfo("    Email:     %s", p.Email)
+		f.DebugInfo("    Password:  %s", r.Password)
+		f.DebugInfo("    Hash:      %s", p.Hash)
+		f.DebugInfo("    Status:    %s", p.Status)
 	}
 
 	return nil
@@ -470,7 +471,7 @@ func createTables(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 
-	f.DebugInfo("Successfully created Tables\n")
+	f.DebugInfo("Successfully created Tables")
 	return nil
 }
 
