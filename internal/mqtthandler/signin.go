@@ -31,6 +31,7 @@ func Signin(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Client, r
 
 	p, err := model.FindPersonByEmail(context.Background(), db, email)
 	if err != nil {
+		f.DebugVerbose("FindPersonByEmail returned err: %s", err.Error())
 		ReplyBadRequest(requestID, client, replyTopic, "Not Authenticated")
 		return
 	}

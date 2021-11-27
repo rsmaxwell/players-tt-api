@@ -395,6 +395,7 @@ func FindPersonByEmail(ctx context.Context, db *sql.DB, email string) (*FullPers
 	where := `email=$1`
 	sqlStatement := `SELECT ` + fields + ` FROM ` + PersonTable + ` WHERE ` + where
 
+	f.DebugVerbose("sqlStatement: %s", sqlStatement)
 	rows, err := db.QueryContext(ctx, sqlStatement, email)
 	if err != nil {
 		message := "Could not select all from " + PersonTable
