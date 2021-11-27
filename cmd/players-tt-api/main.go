@@ -81,6 +81,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	f.DebugInfo("Version: %s\n", basic.Version())
+
 	if args.Version {
 		fmt.Printf("Version: %s\n", basic.Version())
 		fmt.Printf("BuildDate: %s\n", basic.BuildDate())
