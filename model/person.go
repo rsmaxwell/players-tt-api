@@ -160,7 +160,7 @@ func (p *FullPerson) SavePersonTx(db *sql.DB) error {
 		return err
 	}
 
-	err = p.xxxSavePerson(ctx, db)
+	err = p.SavePerson(ctx, db)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -176,7 +176,7 @@ func (p *FullPerson) SavePersonTx(db *sql.DB) error {
 }
 
 // SavePerson writes a new Person to disk and returns the generated id
-func (p *FullPerson) xxxSavePerson(ctx context.Context, db *sql.DB) error {
+func (p *FullPerson) SavePerson(ctx context.Context, db *sql.DB) error {
 	f := functionSavePerson
 
 	fields := "firstname, lastname, knownas, email, phone, hash, status"
