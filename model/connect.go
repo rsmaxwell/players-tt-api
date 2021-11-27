@@ -91,11 +91,16 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 		return nil, err
 	}
 
-	f.DebugInfo("Check database")
-	ok, err = databaseCheck(db)
-	if err != nil {
-		db.Close()
-		return nil, err
+	ok = true
+	if !strings.EqualFold(os.Getenv("INITIALISE"), "true") {
+		ok = false
+	} else {
+		f.DebugInfo("Check database")
+		ok, err = databaseCheck(db)
+		if err != nil {
+			db.Close()
+			return nil, err
+		}
 	}
 
 	if ok {
@@ -109,17 +114,17 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 			f.DumpError(err, message)
 			return nil, err
 		}
-	}
 
-	f.DebugInfo("Re-Checking database")
-	ok, err = databaseCheck(db)
-	if err != nil {
-		db.Close()
-		return nil, err
-	}
-	if !ok {
-		db.Close()
-		return nil, fmt.Errorf("problem initialising database")
+		f.DebugInfo("Re-Checking database")
+		ok, err = databaseCheck(db)
+		if err != nil {
+			db.Close()
+			return nil, err
+		}
+		if !ok {
+			db.Close()
+			return nil, fmt.Errorf("problem initialising database")
+		}
 	}
 
 	if strings.EqualFold(os.Getenv("POPULATE"), "true") {
@@ -182,7 +187,6 @@ func basicConnect(cfg *config.Config) (*sql.DB, error) {
 	f := functionBasicConnect
 
 	// Connect to postgres (no database)
-	f.DebugInfo("Failed database check")
 	f.DebugInfo("Connect to postgres (no database)")
 	driverName := cfg.DriverName()
 	connectionString := cfg.ConnectionStringBasic()

@@ -81,7 +81,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	f.DebugInfo("Version: %s\n", basic.Version())
+	f.DebugInfo("Version: %s", basic.Version())
 
 	if args.Version {
 		fmt.Printf("Version: %s\n", basic.Version())
