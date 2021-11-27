@@ -21,6 +21,7 @@ var (
 	functionInitialiseDatabaseTx = debug.NewFunction(pkg, "initialiseDatabaseTx")
 	functionInitialiseDatabase   = debug.NewFunction(pkg, "initialiseDatabase")
 	functionCreateTables         = debug.NewFunction(pkg, "createTables")
+	functionCreateAdminUser      = debug.NewFunction(pkg, "createAdminUser")
 	functionDropTables           = debug.NewFunction(pkg, "dropTables")
 	functionDropTable            = debug.NewFunction(pkg, "dropTable")
 	functionTableExists          = debug.NewFunction(pkg, "tableExists")
@@ -240,6 +241,85 @@ func initialiseDatabase(ctx context.Context, db *sql.DB) error {
 	err = createTables(ctx, db)
 	if err != nil {
 		return nil
+	}
+
+	err = createAdminUser(ctx, db)
+	if err != nil {
+		return nil
+	}
+
+	return nil
+}
+
+func createAdminUser(ctx context.Context, db *sql.DB) error {
+	f := functionCreateAdminUser
+	f.DebugVerbose("")
+
+	AdminFirstName, ok := os.LookupEnv("PLAYERS_ADMIN_FIRST_NAME")
+	if !ok {
+		return fmt.Errorf("PLAYERS_ADMIN_FIRST_NAME not set")
+	}
+
+	AdminLastName, ok := os.LookupEnv("PLAYERS_ADMIN_LAST_NAME")
+	if !ok {
+		return fmt.Errorf("PLAYERS_ADMIN_LAST_NAME not set")
+	}
+
+	AdminKnownas, ok := os.LookupEnv("PLAYERS_ADMIN_KNOWNAS")
+	if !ok {
+		return fmt.Errorf("PLAYERS_ADMIN_KNOWNAS not set")
+	}
+
+	AdminEmail, ok := os.LookupEnv("PLAYERS_ADMIN_EMAIL")
+	if !ok {
+		return fmt.Errorf("PLAYERS_ADMIN_EMAIL not set")
+	}
+
+	AdminPhone, ok := os.LookupEnv("PLAYERS_ADMIN_PHONE")
+	if !ok {
+		return fmt.Errorf("PLAYERS_ADMIN_PHONE not set")
+	}
+
+	AdminPassword, ok := os.LookupEnv("PLAYERS_ADMIN_PASSWORD")
+	if !ok {
+		return fmt.Errorf("PLAYERS_ADMIN_PASSWORD not set")
+	}
+
+	peopleData := []Registration{
+		{FirstName: AdminFirstName, LastName: AdminLastName, Knownas: AdminKnownas, Email: AdminEmail, Phone: AdminPhone, Password: AdminPassword},
+	}
+
+	peopleIDs := make(map[int]int)
+	for i, r := range peopleData {
+
+		p, err := r.ToPerson()
+		if err != nil {
+			message := "Could not register person"
+			f.Errorf(message)
+			f.DumpError(err, message)
+			os.Exit(1)
+		}
+
+		p.Status = StatusAdmin
+
+		err = p.SavePerson(ctx, db)
+		if err != nil {
+			message := fmt.Sprintf("Could not save person: firstName: %s, lastname: %s, email: %s", p.FirstName, p.LastName, p.Email)
+			f.Errorf(message)
+			f.DumpError(err, message)
+			os.Exit(1)
+		}
+
+		peopleIDs[i] = p.ID
+
+		fmt.Printf("Added person:\n")
+		fmt.Printf("    FirstName: %s\n", p.FirstName)
+		fmt.Printf("    LastName:  %s\n", p.LastName)
+		fmt.Printf("    Knownas:   %s\n", p.Knownas)
+		fmt.Printf("    Email:     %s\n", p.Email)
+		fmt.Printf("    Password:  %s\n", r.Password)
+		fmt.Printf("    Hash:      %s\n", p.Hash)
+		fmt.Printf("    Status:    %s\n", p.Status)
 	}
 
 	return nil
