@@ -105,6 +105,17 @@ func main() {
 	}
 	defer db.Close()
 
+	people, err := model.ListPeopleTx(db, "")
+	if err != nil {
+		f.Errorf("Could not list the people")
+		os.Exit(1)
+	}
+
+	f.DebugInfo("People:")
+	for _, person := range people {
+		f.DebugInfo("    ID: %d, Knownas: %s, Email: %s", person.ID, person.Knownas, person.Email)
+	}
+
 	var host = cfg.Mqtt.Host
 	var port = cfg.Mqtt.Port
 	var broker = fmt.Sprintf("tcp://%s:%d", host, port)
