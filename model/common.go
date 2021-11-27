@@ -13,12 +13,13 @@ import (
 )
 
 var (
-	functionSetup            = debug.NewFunction(pkg, "Setup")
-	functionDeleteAllRecords = debug.NewFunction(pkg, "DeleteAllRecords")
-	functionFillCourtTx      = debug.NewFunction(pkg, "FillCourtTx")
-	functionFillCourt        = debug.NewFunction(pkg, "FillCourt")
-	functionClearCourtTx     = debug.NewFunction(pkg, "ClearCourtTx")
-	functionClearCourt       = debug.NewFunction(pkg, "ClearCourt")
+	functionSetup              = debug.NewFunction(pkg, "Setup")
+	functionDeleteAllRecordsTx = debug.NewFunction(pkg, "DeleteAllRecordsTx")
+	functionDeleteAllRecords   = debug.NewFunction(pkg, "DeleteAllRecords")
+	functionFillCourtTx        = debug.NewFunction(pkg, "FillCourtTx")
+	functionFillCourt          = debug.NewFunction(pkg, "FillCourt")
+	functionClearCourtTx       = debug.NewFunction(pkg, "ClearCourtTx")
+	functionClearCourt         = debug.NewFunction(pkg, "ClearCourt")
 )
 
 var (
@@ -78,6 +79,45 @@ func Setup(t *testing.T) (func(t *testing.T), *sql.DB, *config.Config) {
 	return func(t *testing.T) {
 		db.Close()
 	}, db, cfg
+}
+
+// DeleteAllRecords
+func DeleteAllRecordsTx(db *sql.DB) error {
+	f := functionFillCourtTx
+	ctx := context.Background()
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		message := "Could not begin a new transaction"
+		f.DumpError(err, message)
+		return err
+	}
+
+	err = DeleteAllRecords(ctx, db)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		message := "Could not commit the transaction"
+		f.DumpError(err, message)
+	}
+
+	count, err := CheckConistencyTx(db, false)
+	if err != nil {
+		f.Errorf("Error checking consistency")
+		return err
+	}
+	if count > 0 {
+		message := fmt.Sprintf("Inconsistant data: count: %d", count)
+		f.Errorf(message)
+		err = fmt.Errorf(message)
+		return err
+	}
+
+	return nil
 }
 
 // DeleteAllRecords removes all the records in the database

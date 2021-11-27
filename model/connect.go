@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx"
@@ -14,6 +16,8 @@ import (
 
 var (
 	functionConnect              = debug.NewFunction(pkg, "Connect")
+	functionStandardConnect      = debug.NewFunction(pkg, "standardConnect")
+	functionBasicConnect         = debug.NewFunction(pkg, "basicConnect")
 	functionInitialiseDatabaseTx = debug.NewFunction(pkg, "initialiseDatabaseTx")
 	functionInitialiseDatabase   = debug.NewFunction(pkg, "initialiseDatabase")
 	functionCreateTables         = debug.NewFunction(pkg, "createTables")
@@ -23,6 +27,8 @@ var (
 	functionDatabaseExists       = debug.NewFunction(pkg, "databaseExists")
 	functionCreateDatabase       = debug.NewFunction(pkg, "createDatabase")
 	functionDatabaseCheck        = debug.NewFunction(pkg, "databaseCheck")
+	functionMakePeople           = debug.NewFunction(pkg, "makePeople")
+	functionMakeCourts           = debug.NewFunction(pkg, "makeCourts")
 )
 
 const (
@@ -33,53 +39,40 @@ const (
 func Connect(cfg *config.Config) (*sql.DB, error) {
 	f := functionConnect
 
-	// Connect to the database & database
-	driverName := cfg.DriverName()
-	connectionString := cfg.ConnectionString()
-	f.DebugVerbose("driverName: %s", driverName)
-	f.DebugVerbose("connectionString: %s", connectionString)
+	if !strings.EqualFold(os.Getenv("INITIALISE"), "true") {
+		db, err := standardConnect(cfg)
+		if err != nil {
+			return nil, err
+		}
 
-	db, err := sql.Open(driverName, connectionString)
+		ok, err := databaseCheck(db)
+		if err != nil {
+			db.Close()
+			return nil, err
+		}
+		if ok {
+			return db, nil
+		}
+	}
+
+	f.DebugInfo("Connect to postgress (without database)")
+	db, err := basicConnect(cfg)
 	if err != nil {
-		message := fmt.Sprintf("Could not connect to the database: driverName: %s, connectionString:%s", driverName, connectionString)
-		f.Errorf(message)
-		f.DumpError(err, message)
 		return nil, err
 	}
 
-	ok, err := databaseCheck(db)
+	f.DebugInfo("Check database exists")
+	ok, err := databaseExists(db, cfg.Database.DatabaseName)
 	if err != nil {
-		db.Close()
+		message := fmt.Sprintf("Problem checking the database '%s'", cfg.Database.DatabaseName)
+		f.Errorf(message)
+		f.DumpError(err, message)
 		return nil, err
 	}
 	if ok {
-		return db, nil
-	}
-
-	db.Close()
-
-	// Connect to the database (no database)
-	driverName = cfg.DriverName()
-	connectionString = cfg.ConnectionStringBasic()
-	f.DebugVerbose("driverName: %s", driverName)
-	f.DebugVerbose("connectionString: %s", connectionString)
-
-	db, err = sql.Open(driverName, connectionString)
-	if err != nil {
-		message := fmt.Sprintf("Could not connect to the database: driverName: %s, connectionString:%s", driverName, connectionString)
-		f.Errorf(message)
-		f.DumpError(err, message)
-		return nil, err
-	}
-
-	ok, err = databaseExists(db, cfg.Database.DatabaseName)
-	if err != nil {
-		message := fmt.Sprintf("Problem checking the database '%s' exists", cfg.Database.DatabaseName)
-		f.Errorf(message)
-		f.DumpError(err, message)
-		return nil, err
-	}
-	if !ok {
+		f.DebugInfo("Database already exists")
+	} else {
+		f.DebugInfo("Creating database")
 		err = createDatabase(db, cfg.Database.DatabaseName)
 		if err != nil {
 			message := fmt.Sprintf("Problem checking the database '%s' exists", cfg.Database.DatabaseName)
@@ -91,26 +84,23 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 
 	db.Close()
 
-	// Reconnect to the database & database
-	driverName = cfg.DriverName()
-	connectionString = cfg.ConnectionString()
-	f.DebugVerbose("driverName: %s", driverName)
-	f.DebugVerbose("connectionString: %s", connectionString)
-
-	db, err = sql.Open(driverName, connectionString)
+	f.DebugInfo("Connect to postgress (with database)")
+	db, err = standardConnect(cfg)
 	if err != nil {
-		message := fmt.Sprintf("Could not connect to the database: driverName: %s, connectionString:%s", driverName, connectionString)
-		f.Errorf(message)
-		f.DumpError(err, message)
 		return nil, err
 	}
 
+	f.DebugInfo("Check database")
 	ok, err = databaseCheck(db)
 	if err != nil {
 		db.Close()
 		return nil, err
 	}
-	if !ok {
+
+	if ok {
+		f.DebugInfo("Database already initialised")
+	} else {
+		f.DebugInfo("Re-initialising database")
 		err = initialiseDatabaseTx(db)
 		if err != nil {
 			message := fmt.Sprintf("Problem initialising the database '%s'", cfg.Database.DatabaseName)
@@ -120,6 +110,7 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 		}
 	}
 
+	f.DebugInfo("Re-Checking database")
 	ok, err = databaseCheck(db)
 	if err != nil {
 		db.Close()
@@ -130,7 +121,82 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 		return nil, fmt.Errorf("problem initialising database")
 	}
 
-	return db, nil
+	if strings.EqualFold(os.Getenv("POPULATE"), "true") {
+
+		f.DebugInfo("Delete all the records")
+		err = DeleteAllRecordsTx(db)
+		if err != nil {
+			message := "Error delete all the records"
+			f.Errorf(message)
+			os.Exit(1)
+		}
+
+		f.DebugInfo("Populating database with test data - people")
+		_, err = MakePeople(db)
+		if err != nil {
+			f.Errorf("Error making people")
+			os.Exit(1)
+		}
+
+		f.DebugInfo("Populating database with test data - courts")
+		_, err = MakeCourts(db)
+		if err != nil {
+			f.Errorf("Error making courts")
+			os.Exit(1)
+		}
+	}
+
+	count, err := CheckConistencyTx(db, true)
+	if err != nil {
+		f.Errorf("Error checking consistency")
+		os.Exit(1)
+	}
+
+	f.DebugInfo("Made %d database updates", count)
+
+	return db, err
+}
+
+func standardConnect(cfg *config.Config) (*sql.DB, error) {
+	f := functionStandardConnect
+
+	// Connect to postgres (with database)
+	driverName := cfg.DriverName()
+	connectionString := cfg.ConnectionString()
+	f.DebugVerbose("driverName: %s", driverName)
+	f.DebugVerbose("connectionString: %s", connectionString)
+
+	db, err := sql.Open(driverName, connectionString)
+	if err != nil {
+		message := fmt.Sprintf("Could not connect to postgres: driverName: %s, connectionString:%s", driverName, connectionString)
+		f.Errorf(message)
+		f.DumpError(err, message)
+		return nil, err
+	}
+
+	return db, err
+}
+
+func basicConnect(cfg *config.Config) (*sql.DB, error) {
+	f := functionBasicConnect
+
+	// Connect to postgres (no database)
+	f.DebugInfo("Failed database check")
+	f.DebugInfo("Connect to postgres (no database)")
+	driverName := cfg.DriverName()
+	connectionString := cfg.ConnectionStringBasic()
+	f.DebugVerbose("driverName: %s", driverName)
+	f.DebugVerbose("connectionString: %s", connectionString)
+
+	db, err := sql.Open(driverName, connectionString)
+	if err != nil {
+		message := fmt.Sprintf("Could not connect to postgres: driverName: %s, connectionString:%s", driverName, connectionString)
+		f.Errorf(message)
+		f.DumpError(err, message)
+		return nil, err
+	}
+
+	return db, err
 }
 
 func initialiseDatabaseTx(db *sql.DB) error {
@@ -320,7 +386,7 @@ func createTables(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 
-	fmt.Printf("Successfully created Tables\n")
+	f.DebugInfo("Successfully created Tables\n")
 	return nil
 }
 
@@ -414,13 +480,16 @@ func databaseCheck(db *sql.DB) (bool, error) {
 	if err != nil {
 		if err2, ok2 := err.(pgx.PgError); ok2 {
 			if err2.Code == Invalid_Catalog_Name {
-				ok = false
-				err = nil
+				f.DebugInfo("%s: PgError.Code: %s  (Invalid Catalog Name)", err.Error(), err2.Code)
+				return false, nil
 			} else if err2.Code == Undefined_Table {
-				ok = false
-				err = nil
+				f.DebugInfo("%s: PgError.Code: %s  (Undefined Table)", err.Error(), err2.Code)
+				return false, nil
 			} else {
-				ok = false
+				message := fmt.Sprintf("%s: PgError.Code: %s", err.Error(), err2.Code)
+				f.Errorf(message)
+				f.DumpError(err, message)
+				return false, err
 			}
 		}
 	}
@@ -442,4 +511,110 @@ func createDatabase(db *sql.DB, databaseName string) error {
 	}
 
 	return nil
+}
+
+// Person type
+type PersonData struct {
+	Data   Registration
+	Status string
+}
+
+func MakePeople(db *sql.DB) (map[int]int, error) {
+	f := functionMakePeople
+
+	peopleData := []PersonData{
+		{Data: Registration{FirstName: "James", LastName: "Bond", Knownas: "007", Email: "007@mi6.gov.uk", Phone: "01632 960573", Password: "TopSecret123"}, Status: StatusPlayer},
+		{Data: Registration{FirstName: "Alice", LastName: "Frombe", Knownas: "ali", Email: "ali@mikymouse.com", Phone: "01632 960372", Password: "ali1234567"}, Status: StatusPlayer},
+		{Data: Registration{FirstName: "Tom", LastName: "Smith", Knownas: "tom", Email: "tom@hotmail.com", Phone: "01632 960512", Password: "tom12378909876"}, Status: StatusPlayer},
+		{Data: Registration{FirstName: "Sandra", LastName: "Smythe", Knownas: "tom", Email: "sandra@hotmail.com", Phone: "01632 960966", Password: "sandra12334567"}, Status: StatusInactive},
+		{Data: Registration{FirstName: "George", LastName: "Washington", Knownas: "george", Email: "george@hotmail.com", Phone: "01632 960278", Password: "george789"}, Status: StatusPlayer},
+		{Data: Registration{FirstName: "Margret", LastName: "Tiffington", Knownas: "maggie", Email: "marg@hotmail.com", Phone: "01632 960165", Password: "magie876"}, Status: StatusPlayer},
+		{Data: Registration{FirstName: "James", LastName: "Ernest", Knownas: "jamie", Email: "jamie@ntlworld.com", Phone: "01632 960757", Password: "jamie5293645284"}, Status: StatusInactive},
+		{Data: Registration{FirstName: "Elizabeth", LastName: "Tudor", Knownas: "liz", Email: "liz@buck.palice.com", Phone: "01632 960252", Password: "liz1756453423"}, Status: StatusPlayer},
+		{Data: Registration{FirstName: "Dick", LastName: "Whittington", Knownas: "dick", Email: "dick@ntlworld.com", Phone: "01746 352413", Password: "dick3296846734524"}, Status: StatusPlayer},
+		{Data: Registration{FirstName: "Victoria", LastName: "Hempworth", Knownas: "vickie", Email: "vickie@waitrose.com", Phone: "0195 76863241", Password: "vickie846"}, Status: StatusPlayer},
+
+		{Data: Registration{FirstName: "Shanika", LastName: "Pierre", Knownas: "pete", Email: "IcyGamer@gmail.com", Phone: "01632 960576", Password: "Top12345Secret"}, Status: StatusPlayer},
+		{Data: Registration{FirstName: "Wanangwa", LastName: "Czajkowski", Knownas: "wan", Email: "torphy.dayana@dicki.com", Phone: "01632 960628", Password: "ali12387654"}, Status: StatusPlayer},
+		{Data: Registration{FirstName: "Cormac", LastName: "Dwight", Knownas: "cor", Email: "adela.kunze@schmitt.com", Phone: "01632 960026", Password: "tom123frgthyj"}, Status: StatusSuspended},
+		{Data: Registration{FirstName: "Ramóna", LastName: "Jonker", Knownas: "ram", Email: "ariel07@hotmail.com", Phone: "01632 960801", Password: "sandra123frr"}, Status: StatusSuspended},
+		{Data: Registration{FirstName: "Quinctilius", LastName: "Jack", Knownas: "qui", Email: "kara.johnston@runte.com", Phone: "01632 960334", Password: "george789ed5"}, Status: StatusInactive},
+		{Data: Registration{FirstName: "Radu", LastName: "Godfrey", Knownas: "rad", Email: "ella.vonrueden@kuhic.com", Phone: "01632 960450", Password: "magie87689ilom"}, Status: StatusSuspended},
+		{Data: Registration{FirstName: "Aleksandrina", LastName: "Couture", Knownas: "ale", Email: "archibald.stark@hotmail.com", Phone: "01632 960928", Password: "jamie529re5gb"}, Status: StatusPlayer},
+		{Data: Registration{FirstName: "Catrin", LastName: "Wooldridge", Knownas: "cat", Email: "sauer.luciano@hotmail.com", Phone: "01632 960126", Password: "liz14rdgujmbvr43"}, Status: StatusSuspended},
+		{Data: Registration{FirstName: "Souleymane", LastName: "Walter", Knownas: "sou", Email: "damon.toy@swaniawski.com", Phone: "01632 960403", Password: "dick3287uyh5fredw"}, Status: StatusPlayer},
+		{Data: Registration{FirstName: "Dorotėja", LastName: "Antúnez", Knownas: "dor", Email: "omante@marks.com", Phone: "01632 961252", Password: "vickie846y6"}, Status: StatusPlayer},
+	}
+
+	peopleIDs := make(map[int]int)
+	for i, r := range peopleData {
+
+		p, err := r.Data.ToPerson()
+		if err != nil {
+			message := "Could not register person"
+			f.Errorf(message)
+			f.DumpError(err, message)
+			os.Exit(1)
+		}
+
+		p.Status = r.Status
+
+		err = p.SavePersonTx(db)
+		if err != nil {
+			message := fmt.Sprintf("Could not save person: firstName: %s, lastname: %s, email: %s", p.FirstName, p.LastName, p.Email)
+			f.Errorf(message)
+			f.DumpError(err, message)
+			os.Exit(1)
+		}
+
+		peopleIDs[i] = p.ID
+
+		f.DebugInfo("Added person:")
+		f.DebugInfo("    ID:        %d", p.ID)
+		f.DebugInfo("    FirstName: %s", p.FirstName)
+		f.DebugInfo("    LastName:  %s", p.LastName)
+		f.DebugInfo("    Knownas:   %s", p.Knownas)
+		f.DebugInfo("    Email:     %s", p.Email)
+		f.DebugInfo("    Password:  %s", r.Data.Password)
+		f.DebugInfo("    Hash:      %s", p.Hash)
+		f.DebugInfo("    Status:    %s", p.Status)
+	}
+
+	return peopleIDs, nil
+}
+
+// Court type
+type CourtData struct {
+	Name string
+}
+
+func MakeCourts(db *sql.DB) (map[int]int, error) {
+	f := functionMakeCourts
+
+	courtsData := []CourtData{
+		{Name: "A"},
+		{Name: "B"},
+	}
+
+	courtIDs := make(map[int]int)
+	for i, c := range courtsData {
+
+		court := Court{Name: c.Name}
+
+		err := court.SaveCourtTx(db)
+		if err != nil {
+			message := fmt.Sprintf("Could not save court: Name: %s", court.Name)
+			f.Errorf(message)
+			f.DumpError(err, message)
+			os.Exit(1)
+		}
+
+		courtIDs[i] = court.ID
+
+		f.DebugInfo("Added court:")
+		f.DebugInfo("    ID:    %d", court.ID)
+		f.DebugInfo("    Name:  %s", court.Name)
+	}
+
+	return courtIDs, nil
 }
