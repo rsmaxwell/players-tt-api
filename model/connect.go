@@ -92,7 +92,7 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 	}
 
 	ok = true
-	if !strings.EqualFold(os.Getenv("INITIALISE"), "true") {
+	if strings.EqualFold(os.Getenv("INITIALISE"), "true") {
 		ok = false
 	} else {
 		f.DebugInfo("Check database")
