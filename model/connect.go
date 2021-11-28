@@ -239,17 +239,17 @@ func initialiseDatabase(ctx context.Context, db *sql.DB) error {
 
 	err := dropTables(ctx, db)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	err = createTables(ctx, db)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	err = createAdminUser(ctx, db)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	return nil
