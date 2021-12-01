@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -92,9 +93,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	cfg, err = config.Open(args.Configfile)
+	configfile := path.Join(args.Configdir, config.DefaultConfigFile)
+	cfg, err = config.Open(configfile)
 	if err != nil {
-		f.Errorf("Error opening config: %s", args.Configfile)
+		f.Errorf("Error opening config: %s", configfile)
 		os.Exit(1)
 	}
 

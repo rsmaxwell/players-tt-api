@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path"
 	"testing"
 
 	"github.com/rsmaxwell/players-tt-api/internal/cmdline"
@@ -48,7 +49,8 @@ func Setup(t *testing.T) (func(t *testing.T), *sql.DB, *config.Config) {
 	}
 
 	// Read configuration
-	cfg, err := config.Open(args.Configfile)
+	configfile := path.Join(args.Configdir, config.DefaultConfigFile)
+	cfg, err := config.Open(configfile)
 	if err != nil {
 		f.Errorf("Error setting up")
 		t.FailNow()

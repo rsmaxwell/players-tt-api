@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/rsmaxwell/players-tt-api/internal/cmdline"
 	"github.com/rsmaxwell/players-tt-api/model"
@@ -46,7 +47,8 @@ func main() {
 		os.Exit(0)
 	}
 
-	cfg, err := config.Open(args.Configfile)
+	configfile := path.Join(args.Configdir, config.DefaultConfigFile)
+	cfg, err := config.Open(configfile)
 	if err != nil {
 		f.Errorf("Error setting up")
 		os.Exit(1)

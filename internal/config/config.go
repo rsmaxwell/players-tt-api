@@ -64,6 +64,10 @@ var (
 	functionOpen = debug.NewFunction(pkg, "Open")
 )
 
+const (
+	DefaultConfigFile = "config.json"
+)
+
 // Open returns the configuration
 func Open(configFileName string) (*Config, error) {
 	f := functionOpen
