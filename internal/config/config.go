@@ -108,14 +108,22 @@ func listFileInDir(d *debug.Dump, filename string) error {
 	line := fmt.Sprintf("directory: %s\n", dir)
 	b.WriteString(line)
 
+	length := 0
 	for _, file := range files {
+		line = fmt.Sprintf("%d", file.Size())
+		if len(line) > length {
+			length = len(line)
+		}
+	}
+
+	for _, info := range files {
 		dirString := "-"
-		if file.IsDir() {
+		if info.IsDir() {
 			dirString = "d"
 		}
-		unixPerms := file.Mode() & os.ModePerm
+		unixPerms := info.Mode() & os.ModePerm
 		permString := fmt.Sprintf("%v", unixPerms)
-		line = fmt.Sprintf("%s%s  %d %s\n", dirString, permString, file.Size(), file.Name())
+		line = fmt.Sprintf("%s%s  %*d %s\n", dirString, permString, length, info.Size(), info.Name())
 		b.WriteString(line)
 	}
 
