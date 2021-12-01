@@ -1,10 +1,12 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/rsmaxwell/players-tt-api/internal/debug"
@@ -78,6 +80,8 @@ func Open(configFileName string) (*Config, error) {
 			d.AddObject("fileinfo.json", stats)
 		}
 
+		listFileInDir(d, configFileName)
+
 		return nil, err
 	}
 
@@ -89,4 +93,32 @@ func Open(configFileName string) (*Config, error) {
 	}
 
 	return configFile.toConfig()
+}
+
+func listFileInDir(d *debug.Dump, filename string) error {
+
+	dir := filepath.Dir(filename)
+
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+
+	var b bytes.Buffer
+	line := fmt.Sprintf("directory: %s\n", dir)
+	b.WriteString(line)
+
+	for _, file := range files {
+		dirString := "-"
+		if file.IsDir() {
+			dirString = "d"
+		}
+		unixPerms := file.Mode() & os.ModePerm
+		permString := fmt.Sprintf("%v", unixPerms)
+		line = fmt.Sprintf("%s%s  %d %s\n", dirString, permString, file.Size(), file.Name())
+		b.WriteString(line)
+	}
+
+	d.AddString("dirlist.txt", b.String())
+	return nil
 }
