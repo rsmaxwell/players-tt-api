@@ -14,7 +14,7 @@ func TestPeople(t *testing.T) {
 
 	ctx := context.Background()
 
-	err := DeleteAllRecords(ctx, db)
+	err := DeleteAllRecordsTx(db)
 	if err != nil {
 		t.Log("Could not setup the model")
 		t.FailNow()

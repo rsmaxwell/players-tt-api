@@ -133,8 +133,6 @@ func (person *FullPerson) CheckConistencyPerson(ctx context.Context, db *sql.DB,
 				} else {
 					f.DebugError(fmt.Sprintf("Inconsistant data: person [%d: %s] is a player and has %d player records", person.ID, person.Knownas, len(players)))
 				}
-			} else {
-				// NOP
 			}
 		} else if len(waiters) > 1 {
 

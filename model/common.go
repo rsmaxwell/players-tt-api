@@ -15,11 +15,11 @@ import (
 var (
 	functionSetup              = debug.NewFunction(pkg, "Setup")
 	functionDeleteAllRecordsTx = debug.NewFunction(pkg, "DeleteAllRecordsTx")
-	functionDeleteAllRecords   = debug.NewFunction(pkg, "DeleteAllRecords")
+	functionDeleteAllRecords   = debug.NewFunction(pkg, "deleteAllRecords")
 	functionFillCourtTx        = debug.NewFunction(pkg, "FillCourtTx")
-	functionFillCourt          = debug.NewFunction(pkg, "FillCourt")
+	functionFillCourt          = debug.NewFunction(pkg, "fillCourt")
 	functionClearCourtTx       = debug.NewFunction(pkg, "ClearCourtTx")
-	functionClearCourt         = debug.NewFunction(pkg, "ClearCourt")
+	functionClearCourt         = debug.NewFunction(pkg, "clearCourt")
 )
 
 var (
@@ -40,7 +40,6 @@ func init() {
 // Setup function
 func Setup(t *testing.T) (func(t *testing.T), *sql.DB, *config.Config) {
 	f := functionSetup
-	ctx := context.Background()
 
 	args, err := cmdline.GetArguments()
 	if err != nil {
@@ -63,7 +62,7 @@ func Setup(t *testing.T) (func(t *testing.T), *sql.DB, *config.Config) {
 	defer db.Close()
 
 	// Delete all the records
-	err = DeleteAllRecords(ctx, db)
+	err = DeleteAllRecordsTx(db)
 	if err != nil {
 		f.Errorf("Error delete all the records")
 		t.FailNow()
@@ -83,7 +82,7 @@ func Setup(t *testing.T) (func(t *testing.T), *sql.DB, *config.Config) {
 
 // DeleteAllRecords
 func DeleteAllRecordsTx(db *sql.DB) error {
-	f := functionFillCourtTx
+	f := functionDeleteAllRecordsTx
 	ctx := context.Background()
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -93,7 +92,7 @@ func DeleteAllRecordsTx(db *sql.DB) error {
 		return err
 	}
 
-	err = DeleteAllRecords(ctx, db)
+	err = deleteAllRecords(ctx, db)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -121,7 +120,7 @@ func DeleteAllRecordsTx(db *sql.DB) error {
 }
 
 // DeleteAllRecords removes all the records in the database
-func DeleteAllRecords(ctx context.Context, db *sql.DB) error {
+func deleteAllRecords(ctx context.Context, db *sql.DB) error {
 	f := functionDeleteAllRecords
 
 	sqlStatement := "DELETE FROM " + PlayingTable
@@ -175,7 +174,7 @@ func FillCourtTx(db *sql.DB, courtID int) ([]Position, error) {
 		return nil, err
 	}
 
-	positions, err := FillCourt(ctx, db, courtID)
+	positions, err := fillCourt(ctx, db, courtID)
 	if err != nil {
 		tx.Rollback()
 		return nil, err
@@ -203,7 +202,7 @@ func FillCourtTx(db *sql.DB, courtID int) ([]Position, error) {
 }
 
 // FillCourt
-func FillCourt(ctx context.Context, db *sql.DB, courtID int) ([]Position, error) {
+func fillCourt(ctx context.Context, db *sql.DB, courtID int) ([]Position, error) {
 	f := functionFillCourt
 
 	players, err := ListPlayersForCourt(ctx, db, courtID)
@@ -287,7 +286,7 @@ func ClearCourtTx(db *sql.DB, courtID int) error {
 		return err
 	}
 
-	err = ClearCourt(ctx, db, courtID)
+	err = clearCourt(ctx, db, courtID)
 	if err != nil {
 		tx.Rollback()
 		message := "Problem clearing court"
@@ -320,7 +319,7 @@ func ClearCourtTx(db *sql.DB, courtID int) error {
 }
 
 // ClearCourt
-func ClearCourt(ctx context.Context, db *sql.DB, courtID int) error {
+func clearCourt(ctx context.Context, db *sql.DB, courtID int) error {
 	f := functionClearCourt
 
 	players, err := ListPlayersForCourt(ctx, db, courtID)
@@ -361,35 +360,4 @@ func ClearCourt(ctx context.Context, db *sql.DB, courtID int) error {
 	}
 
 	return nil
-}
-
-// EqualIntArray tells whether a and b contain the same elements NOT in-order order
-func EqualIntArray(x, y []int) bool {
-
-	if x == nil {
-		return y == nil
-	} else if y == nil {
-		return false
-	}
-
-	if len(x) != len(y) {
-		return false
-	}
-
-	xMap := make(map[int]int)
-	yMap := make(map[int]int)
-
-	for _, xElem := range x {
-		xMap[xElem]++
-	}
-	for _, yElem := range y {
-		yMap[yElem]++
-	}
-
-	for xMapKey, xMapVal := range xMap {
-		if yMap[xMapKey] != xMapVal {
-			return false
-		}
-	}
-	return true
 }
