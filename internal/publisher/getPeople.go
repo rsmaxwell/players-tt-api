@@ -11,13 +11,14 @@ import (
 )
 
 var (
-	functionGetPeople = debug.NewFunction(pkg, "GetPeople")
+	functionGetPeople       = debug.NewFunction(pkg, "GetPeople")
+	functionGetPeopleAll    = debug.NewFunction(pkg, "GetPeopleAll")
+	functionGetPeopleFilter = debug.NewFunction(pkg, "GetPeopleFilter")
 
 	filters = make(map[string]string)
 )
 
 func init() {
-	filters["all"] = ``
 	filters["players"] = `WHERE status = 'player'`
 	filters["inactive"] = `WHERE status = 'inactive'`
 	filters["suspended"] = `WHERE status = 'suspended'`
@@ -30,28 +31,75 @@ func GetPeople(db *sql.DB, client mqtt.Client, cfg *config.Config) ([]Entry, err
 
 	array := []Entry{}
 
-	for filterName, whereClause := range filters {
+	items, err := getPeopleAll(db, client, cfg)
+	if err != nil {
+		return nil, err
+	}
+	array = append(array, items...)
 
-		listOfFullPeople, err := model.ListPeopleTx(db, whereClause)
+	for filterName, whereClause := range filters {
+		items, err = getPeopleFilter(db, client, cfg, filterName, whereClause)
 		if err != nil {
-			f.DebugVerbose("filterName: %s, error: %s", filterName, err.Error())
 			return nil, err
 		}
+		array = append(array, items...)
+	}
 
-		listOfPeople := []model.Person{}
-		for _, fullPerson := range listOfFullPeople {
-			person := *fullPerson.ToLimited()
-			listOfPeople = append(listOfPeople, person)
+	return array, nil
+}
 
-			topic := fmt.Sprintf("getPerson/%d", person.ID)
-			entry := Entry{topic: topic, object: listOfPeople}
-			array = append(array, entry)
-		}
+func getPeopleAll(db *sql.DB, client mqtt.Client, cfg *config.Config) ([]Entry, error) {
+	f := functionGetPeopleAll
+	f.DebugVerbose("")
 
-		topic := fmt.Sprintf("getPeople/%s", filterName)
-		entry := Entry{topic: topic, object: listOfPeople}
+	filterName := "all"
+	whereClause := ""
+	array := []Entry{}
+
+	listOfFullPeople, err := model.ListPeopleTx(db, whereClause)
+	if err != nil {
+		f.DebugVerbose("filterName: %s, error: %s", filterName, err.Error())
+		return nil, err
+	}
+
+	listOfPeople := []model.Person{}
+	for _, fullPerson := range listOfFullPeople {
+		person := *fullPerson.ToLimited()
+		listOfPeople = append(listOfPeople, person)
+
+		topic := fmt.Sprintf("getPerson/%d", person.ID)
+		entry := Entry{topic: topic, object: person}
 		array = append(array, entry)
 	}
+
+	topic := fmt.Sprintf("getPeople/%s", filterName)
+	entry := Entry{topic: topic, object: listOfPeople}
+	array = append(array, entry)
+
+	return array, nil
+}
+
+func getPeopleFilter(db *sql.DB, client mqtt.Client, cfg *config.Config, filterName string, whereClause string) ([]Entry, error) {
+	f := functionGetPeopleFilter
+	f.DebugVerbose("filterName: [%s], whereClause: [%s]", filterName, whereClause)
+
+	array := []Entry{}
+
+	listOfFullPeople, err := model.ListPeopleTx(db, whereClause)
+	if err != nil {
+		f.DebugVerbose("filterName: %s, error: %s", filterName, err.Error())
+		return nil, err
+	}
+
+	listOfPeople := []model.Person{}
+	for _, fullPerson := range listOfFullPeople {
+		person := *fullPerson.ToLimited()
+		listOfPeople = append(listOfPeople, person)
+	}
+
+	topic := fmt.Sprintf("getPeople/%s", filterName)
+	entry := Entry{topic: topic, object: listOfPeople}
+	array = append(array, entry)
 
 	return array, nil
 }

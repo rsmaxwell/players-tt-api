@@ -37,7 +37,7 @@ func GetCourts(db *sql.DB, client mqtt.Client, cfg *config.Config) ([]Entry, err
 		}
 
 		topic := fmt.Sprintf("getCourt/%d", court.ID)
-		entry = Entry{topic: topic, object: listOfCourts}
+		entry = Entry{topic: topic, object: court}
 		array = append(array, entry)
 	}
 
