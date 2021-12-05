@@ -56,6 +56,9 @@ func Signin(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Client, r
 		return
 	}
 
+	var refreshDelta = int(cfg.ClientRefreshDelta / time.Second)
+	DebugVerbose(f, requestID, "refreshDelta: %d", refreshDelta)
+
 	reply := struct {
 		Status       int    `json:"status"`
 		Message      string `json:"message"`
@@ -69,7 +72,7 @@ func Signin(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Client, r
 		ID:           p.ID,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		RefreshDelta: int(cfg.ClientRefreshDelta / time.Second),
+		RefreshDelta: refreshDelta,
 	}
 
 	Reply(requestID, client, replyTopic, reply)
