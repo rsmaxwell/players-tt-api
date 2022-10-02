@@ -102,7 +102,7 @@ func main() {
 
 	db, err = model.Connect(cfg)
 	if err != nil {
-		f.Errorf("Error Connecting to the database up")
+		f.Errorf("Error Connecting to database")
 		os.Exit(1)
 	}
 	defer db.Close()

@@ -240,6 +240,12 @@ func fillCourt(ctx context.Context, db *sql.DB, courtID int) ([]Position, error)
 				return nil, err
 			}
 
+			if personID <= 0 {
+				message := "no more waiters"
+				f.Infof(message)
+				break
+			}
+
 			err = RemoveWaiter(ctx, db, personID)
 			if err != nil {
 				message := "Could not remove the waiter"

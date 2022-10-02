@@ -8,6 +8,7 @@ import (
 
 	"github.com/rsmaxwell/players-tt-api/internal/config"
 	"github.com/rsmaxwell/players-tt-api/internal/debug"
+	"github.com/rsmaxwell/players-tt-api/internal/publisher"
 	"github.com/rsmaxwell/players-tt-api/model"
 )
 
@@ -55,6 +56,13 @@ func DeleteCourt(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Clie
 	err = c.DeleteCourtTx(db)
 	if err != nil {
 		ReplyInternalServerError(requestID, client, replyTopic, err.Error())
+		return
+	}
+
+	err = publisher.UpdatePublications(db, client, cfg)
+	if err != nil {
+		f.DebugVerbose(err.Error())
+		f.DumpError(err, "Could not update publications")
 		return
 	}
 

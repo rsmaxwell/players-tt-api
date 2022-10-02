@@ -145,7 +145,7 @@ func DebugVerbose(f *debug.Function, requestID int, format string, a ...interfac
 }
 
 const (
-	StatusOK                  = 0
+	StatusOK                  = 200
 	StatusBadRequest          = 400
 	StatusUnAuthorised        = 401
 	StatusForbidden           = 403

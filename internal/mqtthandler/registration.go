@@ -9,6 +9,7 @@ import (
 	"github.com/rsmaxwell/players-tt-api/internal/codeerror"
 	"github.com/rsmaxwell/players-tt-api/internal/config"
 	"github.com/rsmaxwell/players-tt-api/internal/debug"
+	"github.com/rsmaxwell/players-tt-api/internal/publisher"
 	"github.com/rsmaxwell/players-tt-api/model"
 )
 
@@ -36,10 +37,21 @@ func Register(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Client,
 	if err != nil {
 		pgx, ok := err.(pgx.PgError)
 		if ok {
-			err = codeerror.NewBadRequest(pgx.Message)
+			if pgx.Code == "23505" {
+				err = codeerror.NewBadRequest("Person already registered")
+			} else {
+				err = codeerror.NewDatabaseError(pgx)
+			}
 		}
 
 		ReplyInternalServerError(requestID, client, replyTopic, err.Error())
+		return
+	}
+
+	err = publisher.UpdatePublications(db, client, cfg)
+	if err != nil {
+		f.DebugVerbose(err.Error())
+		f.DumpError(err, "Could not update publications")
 		return
 	}
 

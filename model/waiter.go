@@ -186,14 +186,14 @@ func GetFirstWaiter(ctx context.Context, db *sql.DB) (int, error) {
 	}
 	err = rows.Err()
 	if err != nil {
-		message := "Error get the first player"
+		message := "Error getting the first player"
 		f.DumpError(err, message)
 		return 0, err
 	}
 	if count < 1 {
-		message := "There were no waiters"
-		f.DumpError(err, message)
-		return 0, err
+		// message := "There were no waiters"
+		// f.DumpError(err, message)
+		return 0, nil
 	}
 
 	return id, nil
