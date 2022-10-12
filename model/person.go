@@ -16,6 +16,12 @@ import (
 	"github.com/rsmaxwell/players-tt-api/internal/utils"
 )
 
+// PersonID type
+type PersonId struct {
+	ID      int    `json:"id"`
+	Knownas string `json:"knownas"`
+}
+
 // LimitedPerson type
 type Person struct {
 	ID        int    `json:"id"`

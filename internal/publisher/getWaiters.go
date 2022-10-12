@@ -37,8 +37,8 @@ func GetWaiters(db *sql.DB, client mqtt.Client, cfg *config.Config) ([]Entry, er
 		}
 
 		w := model.DisplayWaiter{}
-		w.PersonID = p.ID
-		w.Knownas = p.Knownas
+		w.PersonId.ID = p.ID
+		w.PersonId.Knownas = p.Knownas
 		w.Start = waiter.Start.Unix()
 
 		listOfWaiters = append(listOfWaiters, w)

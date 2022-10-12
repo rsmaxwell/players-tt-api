@@ -274,7 +274,8 @@ func fillCourt(ctx context.Context, db *sql.DB, courtID int) ([]Position, error)
 			return nil, err
 		}
 
-		var position = Position{Index: player.Position, PersonID: player.Person, DisplayName: person.Knownas}
+		personId := PersonId{ID: player.Person, Knownas: person.Knownas}
+		position := Position{Index: player.Position, PersonId: personId}
 		positions = append(positions, position)
 	}
 

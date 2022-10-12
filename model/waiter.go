@@ -22,9 +22,8 @@ type NullWaiter struct {
 }
 
 type DisplayWaiter struct {
-	PersonID int    `json:"personID"`
-	Knownas  string `json:"knownas"`
-	Start    int64  `json:"start"`
+	PersonId PersonId `json:"personId"`
+	Start    int64    `json:"start"`
 }
 
 const (

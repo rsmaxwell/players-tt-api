@@ -43,8 +43,8 @@ func GetWaiters(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Clien
 		}
 
 		w := model.DisplayWaiter{}
-		w.PersonID = waiter.Person
-		w.Knownas = p.Knownas
+		w.PersonId.ID = waiter.Person
+		w.PersonId.Knownas = p.Knownas
 		w.Start = waiter.Start.Unix()
 
 		list = append(list, w)

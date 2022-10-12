@@ -17,9 +17,8 @@ import (
 
 // Position type
 type Position struct {
-	Index       int    `json:"index"`
-	PersonID    int    `json:"personid"`
-	DisplayName string `json:"displayname"`
+	Index    int      `json:"index"`
+	PersonId PersonId `json:"personId"`
 }
 
 // Court type
@@ -385,7 +384,8 @@ func ListCourts(ctx context.Context, db *sql.DB) ([]Court, error) {
 				d.AddObject("player.json", player)
 				return nil, err
 			}
-			position := Position{Index: player.Position, PersonID: player.Person, DisplayName: person.Knownas}
+			personId := PersonId{ID: player.Person, Knownas: person.Knownas}
+			position := Position{Index: player.Position, PersonId: personId}
 			court.Positions = append(court.Positions, position)
 		}
 
