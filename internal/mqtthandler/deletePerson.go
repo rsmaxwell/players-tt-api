@@ -36,7 +36,7 @@ func DeletePerson(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Cli
 	DebugVerbose(f, requestID, "personID: %d", personID)
 
 	user := model.FullPerson{ID: userID}
-	err = user.LoadPersonTx(db)
+	err = user.LoadPerson(db)
 	if err != nil {
 		message := fmt.Sprintf("Could not load person [%d]", userID)
 		DebugVerbose(f, requestID, message)
@@ -61,7 +61,7 @@ func DeletePerson(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Cli
 	}
 
 	p := model.FullPerson{ID: personID}
-	err = p.DeletePersonTx(db)
+	err = p.DeletePerson(db)
 	if err != nil {
 		ReplyInternalServerError(requestID, client, replyTopic, err.Error())
 		return

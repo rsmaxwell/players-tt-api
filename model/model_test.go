@@ -14,7 +14,7 @@ func TestPeople(t *testing.T) {
 
 	ctx := context.Background()
 
-	err := DeleteAllRecordsTx(db)
+	err := DeleteAllRecords(db)
 	if err != nil {
 		t.Log("Could not setup the model")
 		t.FailNow()
@@ -26,7 +26,7 @@ func TestPeople(t *testing.T) {
 		t.FailNow()
 	}
 
-	listOfCourts, err := ListCourtsTx(db)
+	listOfCourts, err := ListCourts(db)
 	if err != nil {
 		t.Log("Could not list the courts")
 		t.FailNow()
@@ -43,7 +43,7 @@ func TestPeople(t *testing.T) {
 	// 	t.FailNow()
 	// }
 
-	listOfWaiters, err := ListWaiters(ctx, db)
+	listOfWaiters, err := ListWaitersTx(ctx, db)
 	if err != nil {
 		t.Log("Could not get the first waiter")
 		t.FailNow()
@@ -54,7 +54,7 @@ func TestPeople(t *testing.T) {
 	}
 	var p FullPerson
 	p.ID = listOfWaiters[0].Person
-	err = p.LoadPerson(ctx, db)
+	err = p.LoadPersonTx(ctx, db)
 	if err != nil {
 		t.Log("Could not get the first waiter")
 		t.FailNow()
@@ -72,7 +72,7 @@ func TestPeople(t *testing.T) {
 		t.FailNow()
 	}
 
-	err = MakePersonInactive(ctx, db, p.ID)
+	err = MakePersonInactiveTx(ctx, db, p.ID)
 	if err != nil {
 		t.Log("Could not make a person inactive")
 		t.FailNow()
@@ -89,7 +89,7 @@ func TestPeople(t *testing.T) {
 
 	var p2 FullPerson
 	p2.ID = p.ID
-	err = p2.LoadPerson(ctx, db)
+	err = p2.LoadPersonTx(ctx, db)
 	if err != nil {
 		t.Log("Could not load person")
 		t.FailNow()
@@ -98,7 +98,7 @@ func TestPeople(t *testing.T) {
 	p2.FirstName = "xxxxx"
 	p2.Email = "fabdelkader.browx@balaways.com"
 	p2.Phone = "+44 012 098765"
-	err = p2.SavePersonTx(db)
+	err = p2.SavePerson(db)
 	if err != nil {
 		message := "Could not save person"
 		t.Log(message)
@@ -120,12 +120,12 @@ func TestPeople(t *testing.T) {
 		t.FailNow()
 	}
 
-	err = p.DeletePersonTx(db)
+	err = p.DeletePerson(db)
 	if err != nil {
 		t.Log("Could not delete person")
 		t.FailNow()
 	}
-	err = p2.DeletePersonTx(db)
+	err = p2.DeletePerson(db)
 	if err != nil {
 		t.Log("Could not delete person")
 		t.FailNow()

@@ -26,7 +26,7 @@ func TestPeopleBasic(t *testing.T) {
 		t.FailNow()
 	}
 
-	err = p.SavePersonTx(db)
+	err = p.SavePerson(db)
 	if err != nil {
 		t.Log("Could not create new person")
 		t.Logf("%T   %s", err, err.Error())
@@ -66,7 +66,7 @@ func TestPeopleBasic(t *testing.T) {
 
 	var p2 FullPerson
 	p2.ID = p.ID
-	err = p2.LoadPerson(ctx, db)
+	err = p2.LoadPersonTx(ctx, db)
 	if err != nil {
 		t.Log("Could not load person")
 		t.FailNow()
@@ -93,7 +93,7 @@ func TestPeopleBasic(t *testing.T) {
 	p.Hash = hash
 	p.Status = StatusPlayer
 
-	err = p.SavePersonTx(db)
+	err = p.SavePerson(db)
 	if err != nil {
 		t.Log("Could not save person")
 		t.FailNow()
@@ -101,12 +101,12 @@ func TestPeopleBasic(t *testing.T) {
 
 	p.CheckPerson(ctx, t, db, FirstName3, LastName3, Knownas3, Email3, Phone3, Password3, StatusPlayer)
 
-	err = p.DeletePersonTx(db)
+	err = p.DeletePerson(db)
 	if err != nil {
 		t.Log("Could not delete person")
 		t.FailNow()
 	}
-	err = p2.DeletePersonTx(db)
+	err = p2.DeletePerson(db)
 	if err != nil {
 		t.Log("Could not delete person")
 		t.FailNow()
@@ -115,7 +115,7 @@ func TestPeopleBasic(t *testing.T) {
 
 func (p *FullPerson) CheckPerson(ctx context.Context, t *testing.T, db *sql.DB, firstname string, lastname string, displayname string, email string, phone string, password string, status string) {
 
-	err := p.LoadPerson(ctx, db)
+	err := p.LoadPersonTx(ctx, db)
 	if err != nil {
 		t.Log(err.Error())
 		t.FailNow()

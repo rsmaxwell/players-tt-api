@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
@@ -17,10 +18,10 @@ import (
 )
 
 var (
-	pkg                = debug.NewPackage("main")
-	functionMain       = debug.NewFunction(pkg, "main")
-	functionMakePeople = debug.NewFunction(pkg, "makePeople")
-	functionMakeCourts = debug.NewFunction(pkg, "makeCourts")
+	pkg                  = debug.NewPackage("main")
+	functionMain         = debug.NewFunction(pkg, "main")
+	functionMakePeopleTx = debug.NewFunction(pkg, "makePeopleTx")
+	functionMakeCourtsTx = debug.NewFunction(pkg, "makeCourtsTx")
 )
 
 func init() {
@@ -61,26 +62,28 @@ func main() {
 	}
 	defer db.Close()
 
-	_, err = makePeople(db)
+	ctx := context.Background()
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		message := "Could not begin a new transaction"
+		f.DumpError(err, message)
+		os.Exit(1)
+	}
+	defer model.EndTransaction(ctx, tx, db, err)
+
+	_, err = makePeopleTx(db)
 	if err != nil {
 		f.Errorf("Error making people")
 		os.Exit(1)
 	}
 
 	/* courtIDs */
-	_, err = makeCourts(db)
+	_, err = makeCourtsTx(db)
 	if err != nil {
 		f.Errorf("Error making courts")
 		os.Exit(1)
 	}
-
-	count, err := model.CheckConistencyTx(db, true)
-	if err != nil {
-		f.Errorf("Error checking consistency")
-		os.Exit(1)
-	}
-
-	fmt.Printf("Made %d database updates", count)
 }
 
 // Person type
@@ -89,8 +92,8 @@ type PersonData struct {
 	Status string
 }
 
-func makePeople(db *sql.DB) (map[int]int, error) {
-	f := functionMakePeople
+func makePeopleTx(db *sql.DB) (map[int]int, error) {
+	f := functionMakePeopleTx
 
 	peopleData := []PersonData{
 		{Data: model.Registration{FirstName: "James", LastName: "Bond", Knownas: "007", Email: "007@mi6.gov.uk", Phone: "01632 960573", Password: "TopSecret123"}, Status: model.StatusPlayer},
@@ -128,7 +131,7 @@ func makePeople(db *sql.DB) (map[int]int, error) {
 
 		p.Status = r.Status
 
-		err = p.SavePersonTx(db)
+		err = p.SavePerson(db)
 		if err != nil {
 			message := fmt.Sprintf("Could not save person: firstName: %s, lastname: %s, email: %s", p.FirstName, p.LastName, p.Email)
 			f.Errorf(message)
@@ -157,8 +160,8 @@ type CourtData struct {
 	Name string
 }
 
-func makeCourts(db *sql.DB) (map[int]int, error) {
-	f := functionMakeCourts
+func makeCourtsTx(db *sql.DB) (map[int]int, error) {
+	f := functionMakeCourtsTx
 
 	courtsData := []CourtData{
 		{Name: "A"},
@@ -170,7 +173,7 @@ func makeCourts(db *sql.DB) (map[int]int, error) {
 
 		court := model.Court{Name: c.Name}
 
-		err := court.SaveCourtTx(db)
+		err := court.SaveCourt(db)
 		if err != nil {
 			message := fmt.Sprintf("Could not save court: Name: %s", court.Name)
 			f.Errorf(message)

@@ -26,7 +26,7 @@ func GetWaiters(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Clien
 		return
 	}
 
-	waiters, err := model.ListWaiters(context.Background(), db)
+	waiters, err := model.ListWaitersTx(context.Background(), db)
 	if err != nil {
 		ReplyInternalServerError(requestID, client, replyTopic, err.Error())
 		return
@@ -36,7 +36,7 @@ func GetWaiters(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Clien
 	for _, waiter := range waiters {
 
 		p := model.FullPerson{ID: waiter.Person}
-		err := p.LoadPerson(context.Background(), db)
+		err := p.LoadPersonTx(context.Background(), db)
 		if err != nil {
 			ReplyInternalServerError(requestID, client, replyTopic, err.Error())
 			return

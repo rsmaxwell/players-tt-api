@@ -34,7 +34,7 @@ func GetPerson(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Client
 	DebugVerbose(f, requestID, "ID: %d", id)
 
 	p := model.FullPerson{ID: id}
-	err = p.LoadPersonTx(db)
+	err = p.LoadPerson(db)
 	if err != nil {
 		ReplyInternalServerError(requestID, client, replyTopic, err.Error())
 		return

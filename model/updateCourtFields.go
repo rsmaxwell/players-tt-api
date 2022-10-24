@@ -15,8 +15,8 @@ var (
 )
 
 // UpdateCourt method
-func UpdateCourtFieldsTx(db *sql.DB, courtID int, fields map[string]interface{}) error {
-	f := functionUpdateCourtFieldsTx
+func UpdateCourtFields(db *sql.DB, courtID int, fields map[string]interface{}) error {
+	f := functionUpdateCourtFields
 	ctx := context.Background()
 
 	// Begin a transaction
@@ -26,27 +26,21 @@ func UpdateCourtFieldsTx(db *sql.DB, courtID int, fields map[string]interface{})
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	err = UpdateCourtFields(ctx, db, courtID, fields)
+	err = UpdateCourtFieldsTx(ctx, db, courtID, fields)
 	if err != nil {
-		tx.Rollback()
 		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
-		f.DumpError(err, message)
 	}
 
 	return nil
 }
 
-func UpdateCourtFields(ctx context.Context, db *sql.DB, courtID int, fields map[string]interface{}) error {
-	f := functionUpdateCourtFields
+func UpdateCourtFieldsTx(ctx context.Context, db *sql.DB, courtID int, fields map[string]interface{}) error {
+	f := functionUpdateCourtFieldsTx
 
 	c := Court{ID: courtID}
-	err := c.LoadCourt(ctx, db)
+	err := c.LoadCourtTx(ctx, db)
 	if err != nil {
 		message := fmt.Sprintf("could not load court: %d", courtID)
 		f.DebugVerbose(message)

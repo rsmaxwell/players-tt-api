@@ -24,7 +24,7 @@ func GetCourts(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Client
 		return
 	}
 
-	listOfCourts, err := model.ListCourtsTx(db)
+	listOfCourts, err := model.ListCourts(db)
 	if err != nil {
 		ReplyInternalServerError(requestID, client, replyTopic, err.Error())
 		return

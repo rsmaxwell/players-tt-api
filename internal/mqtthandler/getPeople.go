@@ -48,7 +48,7 @@ func GetPeople(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Client
 		return
 	}
 
-	listOfFullPeople, err := model.ListPeopleTx(db, whereClause)
+	listOfFullPeople, err := model.ListPeople(db, whereClause)
 	if err != nil {
 		ReplyInternalServerError(requestID, client, replyTopic, err.Error())
 		return

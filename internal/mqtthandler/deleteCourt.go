@@ -36,7 +36,7 @@ func DeleteCourt(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Clie
 	DebugVerbose(f, requestID, "ID: %d", id)
 
 	user := model.FullPerson{ID: userID}
-	err = user.LoadPersonTx(db)
+	err = user.LoadPerson(db)
 	if err != nil {
 		message := fmt.Sprintf("Could not load person [%d]", userID)
 		DebugVerbose(f, requestID, message)

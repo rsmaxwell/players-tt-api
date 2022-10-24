@@ -19,7 +19,7 @@ func TestCourts(t *testing.T) {
 	ctx := context.Background()
 
 	c := Court{Name: name1}
-	err := c.SaveCourt(ctx, db)
+	err := c.SaveCourtTx(ctx, db)
 	if err != nil {
 		t.Log("Could not create new court")
 		t.FailNow()
@@ -35,7 +35,7 @@ func TestCourts(t *testing.T) {
 	c.Check(ctx, t, db, name2)
 
 	var c2 = Court{ID: c.ID}
-	err = c2.LoadCourt(ctx, db)
+	err = c2.LoadCourtTx(ctx, db)
 	if err != nil {
 		t.Log("Could not load court")
 		t.FailNow()
@@ -43,7 +43,7 @@ func TestCourts(t *testing.T) {
 	c2.Check(ctx, t, db, name2)
 
 	c2.Name = name3
-	err = c2.SaveCourt(ctx, db)
+	err = c2.SaveCourtTx(ctx, db)
 	if err != nil {
 		t.Log("Could not save court")
 		t.FailNow()
@@ -63,7 +63,7 @@ func TestCourts(t *testing.T) {
 }
 
 func (c *Court) Check(ctx context.Context, t *testing.T, db *sql.DB, name string) error {
-	err := c.LoadCourt(ctx, db)
+	err := c.LoadCourtTx(ctx, db)
 	if err != nil {
 		t.Log(err.Error())
 		t.FailNow()

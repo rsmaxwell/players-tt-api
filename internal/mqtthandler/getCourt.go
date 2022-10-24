@@ -34,7 +34,7 @@ func GetCourt(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Client,
 	DebugVerbose(f, requestID, "ID: %d", id)
 
 	c := model.Court{ID: id}
-	err = c.LoadCourtTx(db)
+	err = c.LoadCourt(db)
 	if err != nil {
 		ReplyInternalServerError(requestID, client, replyTopic, err.Error())
 		return

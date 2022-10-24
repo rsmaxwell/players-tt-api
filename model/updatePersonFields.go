@@ -16,8 +16,8 @@ var (
 )
 
 // UpdatePerson method
-func UpdatePersonFieldsTx(db *sql.DB, personID int, fields map[string]interface{}) error {
-	f := functionUpdatePersonFieldsTx
+func UpdatePersonFields(db *sql.DB, personID int, fields map[string]interface{}) error {
+	f := functionUpdatePersonFields
 	ctx := context.Background()
 
 	// Begin a transaction
@@ -27,10 +27,11 @@ func UpdatePersonFieldsTx(db *sql.DB, personID int, fields map[string]interface{
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
 	var person FullPerson
 	person.ID = personID
-	err = person.LoadPerson(ctx, db)
+	err = person.LoadPersonTx(ctx, db)
 	if err != nil {
 		message := fmt.Sprintf("could not load person: %d", personID)
 		f.DebugVerbose(message)
@@ -41,27 +42,14 @@ func UpdatePersonFieldsTx(db *sql.DB, personID int, fields map[string]interface{
 
 	err = person.UpdatePersonFields(ctx, db, fields)
 	if err != nil {
-		tx.Rollback()
 		return err
-	}
-
-	_, err = person.CheckConistencyPerson(ctx, db, true)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
-		f.DumpError(err, message)
 	}
 
 	return nil
 }
 
 func (person *FullPerson) UpdatePersonFields(ctx context.Context, db *sql.DB, fields map[string]interface{}) error {
-	f := functionUpdatePersonFields
+	f := functionUpdatePersonFieldsTx
 
 	if val, ok := fields["firstname"]; ok {
 		person.FirstName, ok = val.(string)

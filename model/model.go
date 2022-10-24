@@ -63,12 +63,12 @@ type Logon struct {
 var (
 	pkg = debug.NewPackage("model")
 
-	functionMakePlayerPlayTx     = debug.NewFunction(pkg, "MakePlayerPlayTx")
-	functionMakePlayerWaitTx     = debug.NewFunction(pkg, "MakePlayerWaitTx")
-	functionMakePersonInactiveTx = debug.NewFunction(pkg, "MakePersonInactiveTx")
-	functionMakePersonPlayerTx   = debug.NewFunction(pkg, "MakePersonPlayerTx")
-	functionMakePersonPlayer     = debug.NewFunction(pkg, "MakePersonPlayer")
-	functionPopulate             = debug.NewFunction(pkg, "Populate")
+	functionMakePlayerPlay     = debug.NewFunction(pkg, "MakePlayerPlayTx")
+	functionMakePlayerWait     = debug.NewFunction(pkg, "MakePlayerWait")
+	functionMakePersonInactive = debug.NewFunction(pkg, "MakePersonInactiveTx")
+	functionMakePersonPlayerTx = debug.NewFunction(pkg, "MakePersonPlayerTx")
+	functionMakePersonPlayer   = debug.NewFunction(pkg, "MakePersonPlayer")
+	functionPopulate           = debug.NewFunction(pkg, "Populate")
 )
 
 // Populate adds a new set of standard records
@@ -102,7 +102,7 @@ func Populate(db *sql.DB) error {
 
 		p.Status = StatusPlayer
 
-		err = p.SavePersonTx(db)
+		err = p.SavePerson(db)
 		if err != nil {
 			f.Errorf("Could not save person: firstName: %s, lastname: %s, email: %s", p.FirstName, p.LastName, p.Email)
 			return err
@@ -127,7 +127,7 @@ func Populate(db *sql.DB) error {
 	courtIDs := make(map[int]int)
 	for i, x := range courtData {
 		c := Court{Name: x.name}
-		err := c.SaveCourt(ctx, db)
+		err := c.SaveCourtTx(ctx, db)
 		if err != nil {
 			message := "Could not save court"
 			f.Errorf(message)
@@ -140,8 +140,8 @@ func Populate(db *sql.DB) error {
 }
 
 // MakePlayerWait moves a person from playing to waiting
-func MakePlayerWaitTx(db *sql.DB, personID int) error {
-	f := functionMakePlayerWaitTx
+func MakePlayerWait(db *sql.DB, personID int) error {
+	f := functionMakePlayerWait
 	ctx := context.Background()
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -151,28 +151,20 @@ func MakePlayerWaitTx(db *sql.DB, personID int) error {
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	err = MakePlayerWait(ctx, db, personID)
+	err = MakePlayerWaitTx(ctx, db, personID)
 	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit a new transaction"
-		f.Errorf(message)
-		f.DumpError(err, message)
 		return err
 	}
 
 	return nil
 }
 
-func MakePlayerWait(ctx context.Context, db *sql.DB, personID int) error {
+func MakePlayerWaitTx(ctx context.Context, db *sql.DB, personID int) error {
 
 	person := FullPerson{ID: personID}
-	err := person.LoadPerson(ctx, db)
+	err := person.LoadPersonTx(ctx, db)
 	if err != nil {
 		return codeerror.NewNotFound(fmt.Sprintf("Person [%d] not found", personID))
 	}
@@ -199,8 +191,8 @@ func MakePlayerWait(ctx context.Context, db *sql.DB, personID int) error {
 }
 
 // MakePlayerPlaying moves a person from playing to waiting
-func MakePlayerPlayTx(db *sql.DB, personID int, courtID int, position int) error {
-	f := functionMakePlayerPlayTx
+func MakePlayerPlay(db *sql.DB, personID int, courtID int, position int) error {
+	f := functionMakePlayerPlay
 	ctx := context.Background()
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -210,28 +202,20 @@ func MakePlayerPlayTx(db *sql.DB, personID int, courtID int, position int) error
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	err = MakePlayerPlay(ctx, db, personID, courtID, position)
+	err = MakePlayerPlayTx(ctx, db, personID, courtID, position)
 	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit a new transaction"
-		f.Errorf(message)
-		f.DumpError(err, message)
 		return err
 	}
 
 	return nil
 }
 
-func MakePlayerPlay(ctx context.Context, db *sql.DB, personID int, courtID int, position int) error {
+func MakePlayerPlayTx(ctx context.Context, db *sql.DB, personID int, courtID int, position int) error {
 
 	person := FullPerson{ID: personID}
-	err := person.LoadPerson(ctx, db)
+	err := person.LoadPersonTx(ctx, db)
 	if err != nil {
 		return codeerror.NewNotFound(fmt.Sprintf("person [%d] not found", personID))
 	}
@@ -240,7 +224,7 @@ func MakePlayerPlay(ctx context.Context, db *sql.DB, personID int, courtID int, 
 	}
 
 	court := Court{ID: courtID}
-	err = court.LoadCourt(ctx, db)
+	err = court.LoadCourtTx(ctx, db)
 	if err != nil {
 		return codeerror.NewNotFound(fmt.Sprintf("court [%d] not found", courtID))
 	}
@@ -270,8 +254,8 @@ func MakePlayerPlay(ctx context.Context, db *sql.DB, personID int, courtID int, 
 }
 
 // MakePersonInactive sets the status of a person to 'inactive'
-func MakePersonInactiveTx(db *sql.DB, personID int) error {
-	f := functionMakePersonInactiveTx
+func MakePersonInactive(db *sql.DB, personID int) error {
+	f := functionMakePersonInactive
 	ctx := context.Background()
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -281,28 +265,20 @@ func MakePersonInactiveTx(db *sql.DB, personID int) error {
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	err = MakePersonInactive(ctx, db, personID)
+	err = MakePersonInactiveTx(ctx, db, personID)
 	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit a new transaction"
-		f.Errorf(message)
-		f.DumpError(err, message)
 		return err
 	}
 
 	return nil
 }
 
-func MakePersonInactive(ctx context.Context, db *sql.DB, personID int) error {
+func MakePersonInactiveTx(ctx context.Context, db *sql.DB, personID int) error {
 
 	person := FullPerson{ID: personID}
-	err := person.LoadPerson(ctx, db)
+	err := person.LoadPersonTx(ctx, db)
 	if err != nil {
 		return codeerror.NewNotFound(fmt.Sprintf("person [%d] not found", personID))
 	}
@@ -328,8 +304,8 @@ func MakePersonInactive(ctx context.Context, db *sql.DB, personID int) error {
 }
 
 // MakePersonPlayer sets the status of a person to 'player'
-func MakePersonPlayerTx(db *sql.DB, personID int) error {
-	f := functionMakePersonPlayerTx
+func MakePersonPlayer(db *sql.DB, personID int) error {
+	f := functionMakePersonPlayer
 	ctx := context.Background()
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -339,26 +315,18 @@ func MakePersonPlayerTx(db *sql.DB, personID int) error {
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	err = MakePersonPlayer(ctx, db, personID)
+	err = MakePersonPlayerTx(ctx, db, personID)
 	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit a new transaction"
-		f.Errorf(message)
-		f.DumpError(err, message)
 		return err
 	}
 
 	return nil
 }
 
-func MakePersonPlayer(ctx context.Context, db *sql.DB, personID int) error {
-	f := functionMakePersonPlayer
+func MakePersonPlayerTx(ctx context.Context, db *sql.DB, personID int) error {
+	f := functionMakePersonPlayerTx
 
 	players, err := ListPlayersForPerson(ctx, db, personID)
 	if err != nil {
@@ -371,7 +339,7 @@ func MakePersonPlayer(ctx context.Context, db *sql.DB, personID int) error {
 	}
 
 	if len(players)+len(waiters) > 1 {
-		err = codeerror.NewInternalServerError("Unconsistant person")
+		err = codeerror.NewInternalServerError("Inconsistant person")
 		d := f.DumpError(err, "")
 		data, _ := json.MarshalIndent(struct {
 			PersonID        int
@@ -387,7 +355,7 @@ func MakePersonPlayer(ctx context.Context, db *sql.DB, personID int) error {
 	}
 
 	person := FullPerson{ID: personID}
-	err = person.LoadPerson(ctx, db)
+	err = person.LoadPersonTx(ctx, db)
 	if err != nil {
 		return err
 	}

@@ -154,8 +154,8 @@ func NewPersonFromMap(data *map[string]interface{}) (*Registration, error) {
 }
 
 // DeletePerson removes a person and associated waiters and playings
-func (p *FullPerson) SavePersonTx(db *sql.DB) error {
-	f := functionSavePersonTx
+func (p *FullPerson) SavePerson(db *sql.DB) error {
+	f := functionSavePerson
 	ctx := context.Background()
 
 	// Create a new context, and begin a transaction
@@ -165,25 +165,19 @@ func (p *FullPerson) SavePersonTx(db *sql.DB) error {
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	err = p.SavePerson(ctx, db)
+	err = p.SavePersonTx(ctx, db)
 	if err != nil {
-		tx.Rollback()
 		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
-		f.DumpError(err, message)
 	}
 
 	return nil
 }
 
-// SavePerson writes a new Person to disk and returns the generated id
-func (p *FullPerson) SavePerson(ctx context.Context, db *sql.DB) error {
-	f := functionSavePerson
+// SavePersonTx writes a new Person to disk and returns the generated id
+func (p *FullPerson) SavePersonTx(ctx context.Context, db *sql.DB) error {
+	f := functionSavePersonTx
 
 	fields := "firstname, lastname, knownas, email, phone, hash, status"
 	values := "$1, $2, $3, $4, $5, $6, $7"
@@ -223,8 +217,8 @@ func (p *FullPerson) UpdatePerson(ctx context.Context, db *sql.DB) error {
 }
 
 // LoadPerson returns the Person with the given ID
-func (p *FullPerson) LoadPersonTx(db *sql.DB) error {
-	f := functionLoadPersonTx
+func (p *FullPerson) LoadPerson(db *sql.DB) error {
+	f := functionLoadPerson
 	ctx := context.Background()
 
 	// Create a new context, and begin a transaction
@@ -234,25 +228,18 @@ func (p *FullPerson) LoadPersonTx(db *sql.DB) error {
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	err = p.LoadPerson(ctx, db)
+	err = p.LoadPersonTx(ctx, db)
 	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
-		f.DumpError(err, message)
 		return err
 	}
 
 	return nil
 }
 
-func (p *FullPerson) LoadPerson(ctx context.Context, db *sql.DB) error {
-	f := functionLoadPerson
+func (p *FullPerson) LoadPersonTx(ctx context.Context, db *sql.DB) error {
+	f := functionLoadPersonTx
 
 	// Query the person
 	fields := "firstname, lastname, knownas, email, phone, hash, status"
@@ -331,8 +318,8 @@ func (p *FullPerson) LoadPerson(ctx context.Context, db *sql.DB) error {
 }
 
 // DeletePerson removes a person and associated waiters and playings
-func (p *FullPerson) DeletePersonTx(db *sql.DB) error {
-	f := functionDeletePersonTx
+func (p *FullPerson) DeletePerson(db *sql.DB) error {
+	f := functionDeletePerson
 	ctx := context.Background()
 
 	// Create a new context, and begin a transaction
@@ -342,25 +329,18 @@ func (p *FullPerson) DeletePersonTx(db *sql.DB) error {
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	err = DeletePerson(ctx, db, p.ID)
+	err = DeletePersonTx(ctx, db, p.ID)
 	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
-		f.DumpError(err, message)
 		return err
 	}
 
 	return nil
 }
 
-func DeletePerson(ctx context.Context, db *sql.DB, personID int) error {
-	f := functionDeletePerson
+func DeletePersonTx(ctx context.Context, db *sql.DB, personID int) error {
+	f := functionDeletePersonTx
 
 	// Remove the associated waiters
 	sqlStatement := "DELETE FROM " + WaitingTable + " WHERE person=" + strconv.Itoa(personID)
@@ -461,8 +441,8 @@ func FindPersonByEmail(ctx context.Context, db *sql.DB, email string) (*FullPers
 }
 
 // ListPeople function
-func ListPeopleTx(db *sql.DB, whereClause string) ([]FullPerson, error) {
-	f := functionListPeopleTx
+func ListPeople(db *sql.DB, whereClause string) ([]FullPerson, error) {
+	f := functionListPeople
 	ctx := context.Background()
 
 	// Create a new context, and begin a transaction
@@ -472,26 +452,19 @@ func ListPeopleTx(db *sql.DB, whereClause string) ([]FullPerson, error) {
 		f.DumpError(err, message)
 		return nil, err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	listOfPeople, err := ListPeople(ctx, db, whereClause)
+	listOfPeople, err := ListPeopleTx(ctx, db, whereClause)
 	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
-		f.DumpError(err, message)
 		return nil, err
 	}
 
 	return listOfPeople, nil
 }
 
-// ListPeople returns a list of the people IDs
-func ListPeople(ctx context.Context, db *sql.DB, whereClause string) ([]FullPerson, error) {
-	f := functionListPeople
+// ListPeopleTx returns a list of the people IDs
+func ListPeopleTx(ctx context.Context, db *sql.DB, whereClause string) ([]FullPerson, error) {
+	f := functionListPeopleTx
 
 	// Query the people
 	fields := "id, firstname, lastname, knownas, email, phone, hash, status"
@@ -591,6 +564,19 @@ func (p *FullPerson) CanLogin() error {
 		return nil
 	}
 	if p.Status == StatusInactive {
+		return nil
+	}
+
+	return fmt.Errorf("not Authorized")
+}
+
+// CanEditGame checks the user is allowed update a court
+func (p *FullPerson) CanEditGame() error {
+
+	if p.Status == StatusAdmin {
+		return nil
+	}
+	if p.Status == StatusPlayer {
 		return nil
 	}
 

@@ -41,8 +41,8 @@ var (
 )
 
 // ListWaiters returns the list of waiters
-func ListWaitersTx(db *sql.DB) ([]Waiter, error) {
-	f := functionListWaitersTx
+func ListWaiters(db *sql.DB) ([]Waiter, error) {
+	f := functionListWaiters
 	ctx := context.Background()
 
 	// Create a new context, and begin a transaction
@@ -52,26 +52,19 @@ func ListWaitersTx(db *sql.DB) ([]Waiter, error) {
 		f.DumpError(err, message)
 		return nil, err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	listOfWaiters, err := ListWaiters(ctx, db)
+	listOfWaiters, err := ListWaitersTx(ctx, db)
 	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
-		f.DumpError(err, message)
 		return nil, err
 	}
 
 	return listOfWaiters, nil
 }
 
-// ListWaiters returns the list of waiters
-func ListWaiters(ctx context.Context, db *sql.DB) ([]Waiter, error) {
-	f := functionListWaiters
+// ListWaitersTx returns the list of waiters
+func ListWaitersTx(ctx context.Context, db *sql.DB) ([]Waiter, error) {
+	f := functionListWaitersTx
 
 	sqlStatement := "SELECT * FROM " + WaitingTable + " ORDER BY start ASC"
 

@@ -20,7 +20,7 @@ func GetWaiters(db *sql.DB, client mqtt.Client, cfg *config.Config) ([]Entry, er
 	f := functionGetWaiters
 	f.DebugVerbose("")
 
-	waiters, err := model.ListWaiters(context.Background(), db)
+	waiters, err := model.ListWaitersTx(context.Background(), db)
 	if err != nil {
 		f.DebugVerbose(err.Error())
 		return nil, err
@@ -30,7 +30,7 @@ func GetWaiters(db *sql.DB, client mqtt.Client, cfg *config.Config) ([]Entry, er
 	for _, waiter := range waiters {
 
 		p := model.FullPerson{ID: waiter.Person}
-		err := p.LoadPerson(context.Background(), db)
+		err := p.LoadPersonTx(context.Background(), db)
 		if err != nil {
 			f.DebugVerbose(err.Error())
 			return nil, err

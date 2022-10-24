@@ -56,7 +56,7 @@ func getPeopleAll(db *sql.DB, client mqtt.Client, cfg *config.Config) ([]Entry, 
 	whereClause := ""
 	array := []Entry{}
 
-	listOfFullPeople, err := model.ListPeopleTx(db, whereClause)
+	listOfFullPeople, err := model.ListPeople(db, whereClause)
 	if err != nil {
 		f.DebugVerbose("filterName: %s, error: %s", filterName, err.Error())
 		return nil, err
@@ -85,7 +85,7 @@ func getPeopleFilter(db *sql.DB, client mqtt.Client, cfg *config.Config, filterN
 
 	array := []Entry{}
 
-	listOfFullPeople, err := model.ListPeopleTx(db, whereClause)
+	listOfFullPeople, err := model.ListPeople(db, whereClause)
 	if err != nil {
 		f.DebugVerbose("filterName: %s, error: %s", filterName, err.Error())
 		return nil, err

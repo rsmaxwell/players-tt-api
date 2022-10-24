@@ -49,6 +49,7 @@ var (
 		"deletePerson": mqtthandler.DeletePerson,
 		"fillCourt":    mqtthandler.FillCourt,
 		"clearCourt":   mqtthandler.ClearCourt,
+		"updateGame":   mqtthandler.UpdateGame,
 	}
 )
 
@@ -107,7 +108,7 @@ func main() {
 	}
 	defer db.Close()
 
-	people, err := model.ListPeopleTx(db, "")
+	people, err := model.ListPeople(db, "")
 	if err != nil {
 		f.Errorf("Could not list the people")
 		os.Exit(1)

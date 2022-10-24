@@ -35,7 +35,7 @@ func FillCourt(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Client
 
 	DebugVerbose(f, requestID, "courtID: %d", courtID)
 
-	positions, err := model.FillCourtTx(db, courtID)
+	positions, err := model.FillCourt(db, courtID)
 	if err != nil {
 		message := "problem filling court"
 		d := Dump(f, requestID, message)

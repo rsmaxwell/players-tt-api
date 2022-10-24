@@ -21,11 +21,12 @@ const (
 )
 
 var (
-	functionListPlayers          = debug.NewFunction(pkg, "ListPlayers")
-	functionAddPlayer            = debug.NewFunction(pkg, "AddPlayer")
-	functionRemovePlayer         = debug.NewFunction(pkg, "RemovePlayer")
-	functionListPlayersForPerson = debug.NewFunction(pkg, "ListPlayersForPerson")
-	functionListPlayersForCourt  = debug.NewFunction(pkg, "ListPlayersForCourt")
+	functionListPlayers             = debug.NewFunction(pkg, "ListPlayers")
+	functionAddPlayer               = debug.NewFunction(pkg, "AddPlayer")
+	functionRemovePlayer            = debug.NewFunction(pkg, "RemovePlayer")
+	functionListPlayersForPerson    = debug.NewFunction(pkg, "ListPlayersForPerson")
+	functionListPlayersForCourt     = debug.NewFunction(pkg, "ListPlayersForCourt")
+	functionGetPlayersForCourtAsMap = debug.NewFunction(pkg, "GetPlayersForCourtAsMap")
 )
 
 // AddPlayer
@@ -153,6 +154,25 @@ func ListPlayersForPerson(ctx context.Context, db *sql.DB, personID int) ([]Play
 	}
 
 	return list, nil
+}
+
+// GetPlayersForCourtAsMap
+func GetPlayersForCourtAsMap(ctx context.Context, db *sql.DB, courtID int) (map[int]Player, error) {
+	f := functionGetPlayersForCourtAsMap
+	f.DebugVerbose("")
+
+	list, err := ListPlayersForCourt(ctx, db, courtID)
+	if err != nil {
+		return nil, err
+	}
+
+	playersMap := make(map[int]Player)
+
+	for _, player := range list {
+		playersMap[player.Position] = player
+	}
+
+	return playersMap, nil
 }
 
 // ListPlayersForCourt

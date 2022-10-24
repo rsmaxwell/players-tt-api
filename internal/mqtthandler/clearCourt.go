@@ -35,7 +35,7 @@ func ClearCourt(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Clien
 
 	DebugVerbose(f, requestID, "courtID: %d", courtID)
 
-	err = model.ClearCourtTx(db, courtID)
+	err = model.ClearCourt(db, courtID)
 	if err != nil {
 		message := "problem clearing court"
 		d := Dump(f, requestID, message)

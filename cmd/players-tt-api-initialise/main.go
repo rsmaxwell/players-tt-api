@@ -127,7 +127,7 @@ func createTablesInDatabase() error {
 	defer db.Close()
 
 	f.DebugInfo("Initialising database")
-	err = initialiseDatabaseTx(db)
+	err = initialiseDatabase(db)
 	if err != nil {
 		return err
 	}
@@ -154,8 +154,8 @@ func connect(cfg *config.Config, connectionString string) (*sql.DB, error) {
 	return db, err
 }
 
-func initialiseDatabaseTx(db *sql.DB) error {
-	f := functionInitialiseDatabaseTx
+func initialiseDatabase(db *sql.DB) error {
+	f := functionInitialiseDatabase
 	ctx := context.Background()
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -164,18 +164,11 @@ func initialiseDatabaseTx(db *sql.DB) error {
 		f.DumpError(err, message)
 		return err
 	}
+	defer model.EndTransaction(ctx, tx, db, err)
 
-	err = initialiseDatabase(ctx, db)
+	err = initialiseDatabaseTx(ctx, db)
 	if err != nil {
-		tx.Rollback()
 		message := "Could not begin a new transaction"
-		f.DumpError(err, message)
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
 		f.DumpError(err, message)
 		return err
 	}
@@ -183,8 +176,8 @@ func initialiseDatabaseTx(db *sql.DB) error {
 	return nil
 }
 
-func initialiseDatabase(ctx context.Context, db *sql.DB) error {
-	f := functionInitialiseDatabase
+func initialiseDatabaseTx(ctx context.Context, db *sql.DB) error {
+	f := functionInitialiseDatabaseTx
 	f.DebugVerbose("")
 
 	err := dropTables(ctx, db)
@@ -460,7 +453,7 @@ func createAdminUser(ctx context.Context, db *sql.DB) error {
 
 		p.Status = model.StatusAdmin
 
-		err = p.SavePerson(ctx, db)
+		err = p.SavePersonTx(ctx, db)
 		if err != nil {
 			message := fmt.Sprintf("Could not save person: firstName: %s, lastname: %s, email: %s", p.FirstName, p.LastName, p.Email)
 			f.Errorf(message)

@@ -21,6 +21,7 @@ var (
 	functionFillCourt          = debug.NewFunction(pkg, "fillCourt")
 	functionClearCourtTx       = debug.NewFunction(pkg, "ClearCourtTx")
 	functionClearCourt         = debug.NewFunction(pkg, "clearCourt")
+	functionEndTransaction     = debug.NewFunction(pkg, "EndTransaction")
 )
 
 var (
@@ -64,7 +65,7 @@ func Setup(t *testing.T) (func(t *testing.T), *sql.DB, *config.Config) {
 	defer db.Close()
 
 	// Delete all the records
-	err = DeleteAllRecordsTx(db)
+	err = DeleteAllRecords(db)
 	if err != nil {
 		f.Errorf("Error delete all the records")
 		t.FailNow()
@@ -83,8 +84,8 @@ func Setup(t *testing.T) (func(t *testing.T), *sql.DB, *config.Config) {
 }
 
 // DeleteAllRecords
-func DeleteAllRecordsTx(db *sql.DB) error {
-	f := functionDeleteAllRecordsTx
+func DeleteAllRecords(db *sql.DB) error {
+	f := functionDeleteAllRecords
 	ctx := context.Background()
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -93,28 +94,10 @@ func DeleteAllRecordsTx(db *sql.DB) error {
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	err = deleteAllRecords(ctx, db)
+	err = deleteAllRecordsTx(ctx, db)
 	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
-		f.DumpError(err, message)
-	}
-
-	count, err := CheckConistencyTx(db, false)
-	if err != nil {
-		f.Errorf("Error checking consistency")
-		return err
-	}
-	if count > 0 {
-		message := fmt.Sprintf("Inconsistant data: count: %d", count)
-		f.Errorf(message)
-		err = fmt.Errorf(message)
 		return err
 	}
 
@@ -122,8 +105,8 @@ func DeleteAllRecordsTx(db *sql.DB) error {
 }
 
 // DeleteAllRecords removes all the records in the database
-func deleteAllRecords(ctx context.Context, db *sql.DB) error {
-	f := functionDeleteAllRecords
+func deleteAllRecordsTx(ctx context.Context, db *sql.DB) error {
+	f := functionDeleteAllRecordsTx
 
 	sqlStatement := "DELETE FROM " + PlayingTable
 	_, err := db.Exec(sqlStatement)
@@ -165,8 +148,8 @@ func deleteAllRecords(ctx context.Context, db *sql.DB) error {
 }
 
 // FillCourt
-func FillCourtTx(db *sql.DB, courtID int) ([]Position, error) {
-	f := functionFillCourtTx
+func FillCourt(db *sql.DB, courtID int) ([]Position, error) {
+	f := functionFillCourt
 	ctx := context.Background()
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -175,28 +158,10 @@ func FillCourtTx(db *sql.DB, courtID int) ([]Position, error) {
 		f.DumpError(err, message)
 		return nil, err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	positions, err := fillCourt(ctx, db, courtID)
+	positions, err := fillCourtTx(ctx, db, courtID)
 	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
-		f.DumpError(err, message)
-	}
-
-	count, err := CheckConistencyTx(db, false)
-	if err != nil {
-		f.Errorf("Error checking consistency")
-		return nil, err
-	}
-	if count > 0 {
-		message := fmt.Sprintf("Inconsistant data: count: %d", count)
-		f.Errorf(message)
-		err = fmt.Errorf(message)
 		return nil, err
 	}
 
@@ -204,8 +169,8 @@ func FillCourtTx(db *sql.DB, courtID int) ([]Position, error) {
 }
 
 // FillCourt
-func fillCourt(ctx context.Context, db *sql.DB, courtID int) ([]Position, error) {
-	f := functionFillCourt
+func fillCourtTx(ctx context.Context, db *sql.DB, courtID int) ([]Position, error) {
+	f := functionFillCourtTx
 
 	players, err := ListPlayersForCourt(ctx, db, courtID)
 	if err != nil {
@@ -266,7 +231,7 @@ func fillCourt(ctx context.Context, db *sql.DB, courtID int) ([]Position, error)
 		}
 
 		person := FullPerson{ID: player.Person}
-		err = person.LoadPerson(ctx, db)
+		err = person.LoadPersonTx(ctx, db)
 		if err != nil {
 			message := "Could not load player"
 			f.Errorf(message)
@@ -283,8 +248,8 @@ func fillCourt(ctx context.Context, db *sql.DB, courtID int) ([]Position, error)
 }
 
 // ClearCourt
-func ClearCourtTx(db *sql.DB, courtID int) error {
-	f := functionClearCourtTx
+func ClearCourt(db *sql.DB, courtID int) error {
+	f := functionClearCourt
 	ctx := context.Background()
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -294,33 +259,13 @@ func ClearCourtTx(db *sql.DB, courtID int) error {
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	err = clearCourt(ctx, db, courtID)
+	err = clearCourtTx(ctx, db, courtID)
 	if err != nil {
-		tx.Rollback()
 		message := "Problem clearing court"
 		f.Errorf(message)
 		f.DumpError(err, message)
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit transaction"
-		f.Errorf(message)
-		f.DumpError(err, message)
-		return err
-	}
-
-	count, err := CheckConistencyTx(db, false)
-	if err != nil {
-		f.Errorf("Error checking consistency")
-		return err
-	}
-	if count > 0 {
-		message := fmt.Sprintf("Inconsistant data: count: %d", count)
-		f.Errorf(message)
-		err = fmt.Errorf(message)
 		return err
 	}
 
@@ -328,8 +273,8 @@ func ClearCourtTx(db *sql.DB, courtID int) error {
 }
 
 // ClearCourt
-func clearCourt(ctx context.Context, db *sql.DB, courtID int) error {
-	f := functionClearCourt
+func clearCourtTx(ctx context.Context, db *sql.DB, courtID int) error {
+	f := functionClearCourtTx
 
 	players, err := ListPlayersForCourt(ctx, db, courtID)
 	if err != nil {
@@ -349,7 +294,7 @@ func clearCourt(ctx context.Context, db *sql.DB, courtID int) error {
 		}
 
 		person := FullPerson{ID: player.Person}
-		err = person.LoadPerson(ctx, db)
+		err = person.LoadPersonTx(ctx, db)
 		if err != nil {
 			message := "Could not load player"
 			f.Errorf(message)
@@ -369,4 +314,39 @@ func clearCourt(ctx context.Context, db *sql.DB, courtID int) error {
 	}
 
 	return nil
+}
+
+func EndTransaction(ctx context.Context, tx *sql.Tx, db *sql.DB, err error) error {
+	f := functionEndTransaction
+	f.DebugVerbose("")
+
+	p := recover()
+	if p != nil {
+		f.DebugVerbose("Rollback on panic")
+		tx.Rollback()
+		panic(p)
+	} else if err != nil {
+		f.DebugVerbose("Rollback on error")
+		tx.Rollback()
+	} else {
+
+		count, err := CheckConistency(ctx, db, false)
+		if err != nil {
+			f.Errorf("Rollback on failed consistency check")
+			tx.Rollback()
+			return err
+		}
+		if count > 0 {
+			message := fmt.Sprintf("Rollback on inconsistant data: count: %d", count)
+			f.Errorf(message)
+			err = fmt.Errorf(message)
+			tx.Rollback()
+			return err
+		}
+
+		f.DebugVerbose("Commit on success")
+		return tx.Commit()
+	}
+
+	return err
 }

@@ -36,7 +36,7 @@ func UpdateCourt(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Clie
 	DebugVerbose(f, requestID, "courtID: %d", courtID)
 
 	user := model.FullPerson{ID: userID}
-	err = user.LoadPersonTx(db)
+	err = user.LoadPerson(db)
 	if err != nil {
 		message := fmt.Sprintf("Could not load person [%d]", userID)
 		DebugVerbose(f, requestID, message)
@@ -52,7 +52,7 @@ func UpdateCourt(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Clie
 		return
 	}
 
-	err = model.UpdateCourtFieldsTx(db, courtID, *data)
+	err = model.UpdateCourtFields(db, courtID, *data)
 	if err != nil {
 		message := fmt.Sprintf("problem updating court fields: courtID: %d", courtID)
 		DebugVerbose(f, requestID, message)

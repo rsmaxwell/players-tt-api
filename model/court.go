@@ -88,9 +88,9 @@ func (c *Court) ToPlainCourt() *PlainCourt {
 	return &plainCourt
 }
 
-// SaveCourtTx method
-func (c *Court) SaveCourtTx(db *sql.DB) error {
-	f := functionSaveCourtTx
+// SaveCourt method
+func (c *Court) SaveCourt(db *sql.DB) error {
+	f := functionSaveCourt
 	ctx := context.Background()
 
 	// and begin a transaction
@@ -100,18 +100,11 @@ func (c *Court) SaveCourtTx(db *sql.DB) error {
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	err = c.SaveCourt(ctx, db)
+	err = c.SaveCourtTx(ctx, db)
 	if err != nil {
-		tx.Rollback()
 		message := "Could not SaveCourt"
-		f.DumpError(err, message)
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
 		f.DumpError(err, message)
 		return err
 	}
@@ -119,9 +112,9 @@ func (c *Court) SaveCourtTx(db *sql.DB) error {
 	return nil
 }
 
-// SaveCourt writes a new Court to disk and returns the generated id
-func (c *Court) SaveCourt(ctx context.Context, db *sql.DB) error {
-	f := functionSaveCourt
+// SaveCourtTx writes a new Court to disk and returns the generated id
+func (c *Court) SaveCourtTx(ctx context.Context, db *sql.DB) error {
+	f := functionSaveCourtTx
 
 	fields := "name"
 	values := basic.Quote(c.Name)
@@ -155,9 +148,9 @@ func (c *Court) UpdateCourt(ctx context.Context, db *sql.DB) error {
 	return err
 }
 
-// LoadCourtTx method
-func (c *Court) LoadCourtTx(db *sql.DB) error {
-	f := functionLoadCourtTx
+// LoadCourt method
+func (c *Court) LoadCourt(db *sql.DB) error {
+	f := functionLoadCourt
 	ctx := context.Background()
 
 	// and begin a transaction
@@ -167,18 +160,11 @@ func (c *Court) LoadCourtTx(db *sql.DB) error {
 		f.DumpError(err, message)
 		return err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	err = c.LoadCourt(ctx, db)
+	err = c.LoadCourtTx(ctx, db)
 	if err != nil {
-		tx.Rollback()
 		message := "Could not begin a new transaction"
-		f.DumpError(err, message)
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
 		f.DumpError(err, message)
 		return err
 	}
@@ -186,9 +172,9 @@ func (c *Court) LoadCourtTx(db *sql.DB) error {
 	return nil
 }
 
-// LoadCourt returns the Court with the given ID
-func (c *Court) LoadCourt(ctx context.Context, db *sql.DB) error {
-	f := functionLoadCourt
+// LoadCourtTx returns the Court with the given ID
+func (c *Court) LoadCourtTx(ctx context.Context, db *sql.DB) error {
+	f := functionLoadCourtTx
 
 	// Query the court
 	sqlStatement := "SELECT * FROM " + CourtTable + " WHERE ID=" + strconv.Itoa(c.ID)
@@ -248,7 +234,6 @@ func (c *Court) DeleteCourtTx(db *sql.DB) error {
 
 	err = DeleteCourt(ctx, db, c.ID)
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
 
@@ -273,7 +258,7 @@ func DeleteCourt(ctx context.Context, db *sql.DB, courtID int) error {
 	}
 
 	for _, player := range players {
-		err = MakePlayerWait(ctx, db, player.Person)
+		err = MakePlayerWaitTx(ctx, db, player.Person)
 		if err != nil {
 			message := "Could not make player wait"
 			f.DumpError(err, message)
@@ -303,8 +288,8 @@ func DeleteCourt(ctx context.Context, db *sql.DB, courtID int) error {
 }
 
 // ListCourts returns a list of the court IDs
-func ListCourtsTx(db *sql.DB) ([]Court, error) {
-	f := functionListCourtsTx
+func ListCourts(db *sql.DB) ([]Court, error) {
+	f := functionListCourts
 	ctx := context.Background()
 
 	// and begin a transaction
@@ -314,18 +299,11 @@ func ListCourtsTx(db *sql.DB) ([]Court, error) {
 		f.DumpError(err, message)
 		return nil, err
 	}
+	defer EndTransaction(ctx, tx, db, err)
 
-	list, err := ListCourts(ctx, db)
+	list, err := ListCourtsTx(ctx, db)
 	if err != nil {
-		tx.Rollback()
 		message := "Could not begin a new transaction"
-		f.DumpError(err, message)
-		return nil, err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
 		f.DumpError(err, message)
 		return nil, err
 	}
@@ -333,9 +311,9 @@ func ListCourtsTx(db *sql.DB) ([]Court, error) {
 	return list, nil
 }
 
-// ListCourts returns a list of the court IDs
-func ListCourts(ctx context.Context, db *sql.DB) ([]Court, error) {
-	f := functionListCourts
+// ListCourtsTx returns a list of the court IDs
+func ListCourtsTx(ctx context.Context, db *sql.DB) ([]Court, error) {
+	f := functionListCourtsTx
 
 	// Query the courts
 	returnedFields := []string{`id`, `name`}
@@ -376,7 +354,7 @@ func ListCourts(ctx context.Context, db *sql.DB) ([]Court, error) {
 		for _, player := range players {
 
 			person := FullPerson{ID: player.Person}
-			err := person.LoadPerson(ctx, db)
+			err := person.LoadPersonTx(ctx, db)
 			if err != nil {
 				message := fmt.Sprintf("Could not load the player [%d]", player.Person)
 				d := f.DumpError(err, message)

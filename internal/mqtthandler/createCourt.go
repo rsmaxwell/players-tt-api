@@ -28,7 +28,7 @@ func CreateCourt(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Clie
 	}
 
 	user := model.FullPerson{ID: userID}
-	err = user.LoadPersonTx(db)
+	err = user.LoadPerson(db)
 	if err != nil {
 		message := fmt.Sprintf("Could not load person [%d]", userID)
 		DebugVerbose(f, requestID, message)
@@ -52,7 +52,7 @@ func CreateCourt(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Clie
 		return
 	}
 
-	err = c.SaveCourtTx(db)
+	err = c.SaveCourt(db)
 	if err != nil {
 		message := err.Error()
 		DebugVerbose(f, requestID, message)

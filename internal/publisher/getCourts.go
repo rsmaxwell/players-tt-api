@@ -19,7 +19,7 @@ func GetCourts(db *sql.DB, client mqtt.Client, cfg *config.Config) ([]Entry, err
 	f := functionGetCourts
 	f.DebugVerbose("")
 
-	listOfCourts, err := model.ListCourtsTx(db)
+	listOfCourts, err := model.ListCourts(db)
 	if err != nil {
 		f.DebugVerbose(err.Error())
 		return nil, err
@@ -30,7 +30,7 @@ func GetCourts(db *sql.DB, client mqtt.Client, cfg *config.Config) ([]Entry, err
 
 	for _, court := range listOfCourts {
 		court := model.Court{ID: court.ID}
-		err := court.LoadCourtTx(db)
+		err := court.LoadCourt(db)
 		if err != nil {
 			f.DebugVerbose(err.Error())
 			return nil, err

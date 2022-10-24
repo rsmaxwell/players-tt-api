@@ -9,41 +9,14 @@ import (
 )
 
 var (
-	functionCheckConistencyTx     = debug.NewFunction(pkg, "CheckConistencyTx")
 	functionCheckConistency       = debug.NewFunction(pkg, "CheckConistency")
 	functionCheckConistencyPerson = debug.NewFunction(pkg, "CheckConistencyPerson")
 )
 
-func CheckConistencyTx(db *sql.DB, fix bool) (int, error) {
-	f := functionCheckConistencyTx
-	ctx := context.Background()
-
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		message := "Could not begin a new transaction"
-		f.DumpError(err, message)
-		return 0, err
-	}
-
-	count, err := CheckConistency(ctx, db, fix)
-	if err != nil {
-		tx.Rollback()
-		return 0, err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		message := "Could not commit the transaction"
-		f.DumpError(err, message)
-	}
-
-	return count, nil
-}
-
 func CheckConistency(ctx context.Context, db *sql.DB, fix bool) (int, error) {
 	f := functionCheckConistency
 
-	list, err := ListPeople(ctx, db, "")
+	list, err := ListPeopleTx(ctx, db, "")
 	if err != nil {
 		message := "Could not list people"
 		f.Errorf(message)

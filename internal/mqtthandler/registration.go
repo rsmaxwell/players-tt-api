@@ -33,7 +33,7 @@ func Register(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Client,
 		return
 	}
 
-	err = p.SavePersonTx(db)
+	err = p.SavePerson(db)
 	if err != nil {
 		pgx, ok := err.(pgx.PgError)
 		if ok {

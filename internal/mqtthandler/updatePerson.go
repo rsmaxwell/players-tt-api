@@ -36,7 +36,7 @@ func UpdatePerson(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Cli
 	DebugVerbose(f, requestID, "personID: %d", personID)
 
 	user := model.FullPerson{ID: userID}
-	err = user.LoadPersonTx(db)
+	err = user.LoadPerson(db)
 	if err != nil {
 		message := fmt.Sprintf("Could not load person [%d]", userID)
 		DebugVerbose(f, requestID, message)
@@ -59,7 +59,7 @@ func UpdatePerson(db *sql.DB, cfg *config.Config, requestID int, client mqtt.Cli
 		}
 	}
 
-	err = model.UpdatePersonFieldsTx(db, personID, *data)
+	err = model.UpdatePersonFields(db, personID, *data)
 	if err != nil {
 		message := fmt.Sprintf("problem updating person fields: userID: %d", userID)
 		DebugVerbose(f, requestID, message)
