@@ -1,8 +1,8 @@
 #!/bin/bash
 
-NAME=example-go
+NAME=players-tt-go
 
-GROUPID=com.rsmaxwell.example
+GROUPID=com.rsmaxwell.players
 ARTIFACTID=${NAME}-x86_64-linux
 VERSION=${BUILD_ID:-SNAPSHOT}
 PACKAGING=zip
