@@ -148,12 +148,11 @@ func updateGameTx(ctx context.Context, db *sql.DB, gameData *GameData) error {
 			continue
 		}
 
-		err = checkPlayerIsWaiting(position.Value, waiters)
-		if err != nil {
-			return err
-		}
-
 		if position.Value != nil {
+			err = checkPlayerIsWaiting(position.Value, waiters)
+			if err != nil {
+				return err
+			}
 			err = MakePlayerPlayTx(ctx, db, position.Value.ID, gameData.Court, index)
 			if err != nil {
 				message := fmt.Sprintf("Could not make player [%d] on court [%d], wait", position.Value.ID, gameData.Court)

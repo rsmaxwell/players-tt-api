@@ -66,8 +66,8 @@ var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 	f := functionConnectLostHandler
 	f.DebugVerbose("Connect lost: %v\n", err)
-	f.DebugVerbose("Exiting...\n")
-	os.Exit(1)
+	// f.DebugVerbose("Exiting...\n")
+	// os.Exit(1)
 }
 
 var db *sql.DB
@@ -126,6 +126,7 @@ func main() {
 
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(broker)
+	opts.SetCleanSession(false)
 	opts.SetClientID(cfg.Mqtt.ClientID)
 	opts.SetUsername(cfg.Mqtt.Username)
 	opts.SetPassword(cfg.Mqtt.Password)
