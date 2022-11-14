@@ -13,16 +13,8 @@ REPOSITORY=releases
 REPOSITORYID=releases
 URL=https://pluto.rsmaxwell.co.uk/archiva/repository/${REPOSITORY}
 
-
-pwd
-ls -al 
-
-
 DIST_DIR=./dist
 cd ${DIST_DIR}
-
-ls -al
-ls "${NAME}*"
 
 ZIPFILE=$(ls ${NAME}*)
 
