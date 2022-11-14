@@ -2,7 +2,7 @@
 
 set -x
 
-NAME=example-go
+NAME=players-tt-api
 
 ZIPFILE=${NAME}.zip
 
@@ -14,6 +14,6 @@ rm -rf ${PACKAGE_DIR} ${DIST_DIR}
 mkdir -p ${PACKAGE_DIR} ${DIST_DIR}
 
 cd ${PACKAGE_DIR}
-cp ${BUILD_DIR}/hello .
+cp ${BUILD_DIR}/players-tt-api .
 
 zip ${DIST_DIR}/${ZIPFILE} *

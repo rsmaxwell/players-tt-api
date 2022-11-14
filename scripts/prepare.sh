@@ -3,7 +3,7 @@
 VERSION="0.0.$((${BUILD_ID}))"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
     
-find . -name "version.h" | while read versionfile; do
+find . -name "version.go" | while read versionfile; do
 
     echo "Replacing tags in ${versionfile}"
 

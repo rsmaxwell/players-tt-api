@@ -2,6 +2,4 @@
 
 set -x
 
-BUILD_DIR=./build
-
-${BUILD_DIR}/hello
+echo "testing: hello world"
