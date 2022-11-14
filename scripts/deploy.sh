@@ -21,9 +21,10 @@ ls -al
 DIST_DIR=./dist
 cd ${DIST_DIR}
 
-ls -al 
+ls -al
+ls "${NAME}*"
 
-ZIPFILE=$(ls ${NAME}*)
+ZIPFILE=$(ls "${NAME}*")
 
 mvn --batch-mode deploy:deploy-file \
 	-DgroupId=${GROUPID} \
