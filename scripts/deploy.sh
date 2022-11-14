@@ -2,7 +2,7 @@
 
 set -x
 
-NAME=players-tt-go
+NAME=players-tt-api
 
 GROUPID=com.rsmaxwell.players
 ARTIFACTID=${NAME}-x86_64-linux
