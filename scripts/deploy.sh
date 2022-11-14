@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 NAME=players-tt-go
 
 GROUPID=com.rsmaxwell.players
@@ -11,12 +13,17 @@ REPOSITORY=releases
 REPOSITORYID=releases
 URL=https://pluto.rsmaxwell.co.uk/archiva/repository/${REPOSITORY}
 
+
+pwd
+ls -al 
+
+
 DIST_DIR=./dist
 cd ${DIST_DIR}
 
-ZIPFILE=$(ls ${NAME}*)
+ls -al 
 
-set -x
+ZIPFILE=$(ls ${NAME}*)
 
 mvn --batch-mode deploy:deploy-file \
 	-DgroupId=${GROUPID} \
