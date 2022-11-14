@@ -16,4 +16,6 @@ mkdir -p ${PACKAGE_DIR} ${DIST_DIR}
 cd ${PACKAGE_DIR}
 cp ${BUILD_DIR}/players-tt-api .
 
+ls -al ${BUILD_DIR}
+
 zip ${DIST_DIR}/${ZIPFILE} *
