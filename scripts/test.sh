@@ -2,7 +2,7 @@
 
 set -x
 
-echo "testing: 'players-tt-api'"
+echo "testing: players-tt-api"
 
 BUILD_DIR=./build
 
