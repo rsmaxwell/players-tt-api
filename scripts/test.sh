@@ -5,5 +5,9 @@ set -x
 echo "testing: players-tt-api"
 
 BUILD_DIR=./build
+cd ${BUILD_DIR}
 
-${BUILD_DIR}/players-tt-api --version
+pwd
+ls -al 
+
+./players-tt-api --version
