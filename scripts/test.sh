@@ -2,4 +2,8 @@
 
 set -x
 
-echo "testing: hello world"
+echo "testing: 'players-tt-api'"
+
+BUILD_DIR=./build
+
+${BUILD_DIR}/players-tt-api --version
