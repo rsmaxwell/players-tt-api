@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 VERSION="0.0.$((${BUILD_ID}))"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
