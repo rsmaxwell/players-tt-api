@@ -5,7 +5,7 @@ set -x
 NAME=players-tt-api
 
 GROUPID=com.rsmaxwell.players
-ARTIFACTID=${NAME}-x86_64-linux
+ARTIFACTID=${NAME}-${1:=x86_64-linux}
 VERSION=${BUILD_ID:-SNAPSHOT}
 PACKAGING=zip
 
