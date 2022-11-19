@@ -2,10 +2,16 @@
 
 set -x
 
+if [ -z "$1" ]; then
+    echo "The 'PLATFORM' argument was missing"
+    exit 1
+fi
+PLATFORM="$1"
+
 NAME=players-tt-api
 
 GROUPID=com.rsmaxwell.players
-ARTIFACTID=${NAME}-${1:=x86_64-linux}
+ARTIFACTID=${NAME}-${PLATFORM}
 VERSION=${BUILD_ID:-SNAPSHOT}
 PACKAGING=zip
 
