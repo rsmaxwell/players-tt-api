@@ -30,3 +30,6 @@ cat << EOF > ${BUILD_DIR}/info.json
 	"GIT_URL": ${GIT_URL}
 }
 EOF
+
+ls -al ${BUILD_DIR}/info.json
+cat ${BUILD_DIR}/info.json
