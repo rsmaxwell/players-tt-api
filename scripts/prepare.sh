@@ -25,11 +25,24 @@ cat << EOF > ${BUILD_DIR}/info.json
 	"VERSION": "${VERSION}",
 	"BUILD_ID": ${BUILD_ID},
 	"TIMESTAMP": "${TIMESTAMP}",
-	"GIT_COMMIT": "${GIT_COMMIT}",
-	"GIT_BRANCH": "${GIT_BRANCH}",
-	"GIT_URL": "${GIT_URL}"
+	"pipeline": {
+		"GIT_COMMIT": "${GIT_COMMIT}",
+		"GIT_BRANCH": "${GIT_BRANCH}",
+		"GIT_URL": "${GIT_URL}"
+	},
+	"project": {
+		"GIT_COMMIT": "$(git rev-parse HEAD)",
+		"GIT_BRANCH": "$(git rev-parse --abbrev-ref HEAD)",
+		"GIT_URL": "$(git config --local remote.origin.url)"
+	}
 }
 EOF
+
+
+git rev-parse HEAD
+git rev-parse --abbrev-ref HEAD
+git config --local remote.origin.url
+
 
 ls -al ${BUILD_DIR}/info.json
 cat ${BUILD_DIR}/info.json
