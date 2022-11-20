@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -x 
+ 
 VERSION="0.0.$((${BUILD_ID}))"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
     
@@ -15,8 +17,9 @@ find . -name "version.go" | while read versionfile; do
     sed -i "s@<GIT_URL>@${GIT_URL}@g"            ${versionfile}
 done
 
+BUILD_DIR=./build
 
-cat << EOF > info.json
+cat << EOF > ${BUILD_DIR]/info.json
 {
 	"VERSION": ${VERSION}
 	"BUILD_ID": ${BUILD_ID}
