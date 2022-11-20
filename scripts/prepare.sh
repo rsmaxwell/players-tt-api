@@ -19,7 +19,7 @@ done
 
 BUILD_DIR=./build
 
-cat << EOF > ${BUILD_DIR]/info.json
+cat << EOF > ${BUILD_DIR}/info.json
 {
 	"VERSION": ${VERSION}
 	"BUILD_ID": ${BUILD_ID}
