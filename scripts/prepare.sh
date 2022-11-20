@@ -32,11 +32,19 @@ cat << EOF > ${BUILD_DIR}/info.json
 	},
 	"project": {
 		"GIT_COMMIT": "$(git rev-parse HEAD)",
-		"GIT_BRANCH": "$(git branch --show-current)",
+		"GIT_BRANCH": "$(git branch)",
 		"GIT_URL": "$(git config --local remote.origin.url)"
 	}
 }
 EOF
+
+echo "git status"                        > ${BUILD_DIR}/info2.json
+echo $(git status)                      >> ${BUILD_DIR}/info2.json
+echo ""                                 >> ${BUILD_DIR}/info2.json
+echo "git rev-parse --abbrev-ref HEAD)" >> ${BUILD_DIR}/info2.json
+echo $(git rev-parse --abbrev-ref HEAD) >> ${BUILD_DIR}/info2.json
+echo ""                                 >> ${BUILD_DIR}/info2.json
+
 
 ls -al ${BUILD_DIR}/info.json
 cat ${BUILD_DIR}/info.json
