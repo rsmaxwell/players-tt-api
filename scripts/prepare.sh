@@ -18,6 +18,7 @@ find . -name "version.go" | while read versionfile; do
 done
 
 BUILD_DIR=./build
+mkdir -p ${BUILD_DIR}
 
 cat << EOF > ${BUILD_DIR}/info.json
 {
