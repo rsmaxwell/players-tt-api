@@ -1,7 +1,16 @@
 #!/bin/sh
 
 set -x 
- 
+
+BRANCH=${1}
+if [ -z "${BRANCH}" ]; then
+    echo "Error: $0[${LINENO}]"
+    echo "Missing BRANCH argument"
+    exit 1
+fi
+
+
+
 VERSION="0.0.$((${BUILD_ID}))"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
     
@@ -32,7 +41,7 @@ cat << EOF > ${BUILD_DIR}/info.json
 	},
 	"project": {
 		"GIT_COMMIT": "$(git rev-parse HEAD)",
-		"GIT_BRANCH": "$(git branch)",
+		"GIT_BRANCH": "${BRANCH}",
 		"GIT_URL": "$(git config --local remote.origin.url)"
 	}
 }
