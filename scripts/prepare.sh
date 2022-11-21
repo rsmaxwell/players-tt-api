@@ -47,13 +47,6 @@ cat << EOF > ${BUILD_DIR}/info.json
 }
 EOF
 
-echo "git status"                        > ${BUILD_DIR}/info2.json
-echo $(git status)                      >> ${BUILD_DIR}/info2.json
-echo ""                                 >> ${BUILD_DIR}/info2.json
-echo "git rev-parse --abbrev-ref HEAD)" >> ${BUILD_DIR}/info2.json
-echo $(git rev-parse --abbrev-ref HEAD) >> ${BUILD_DIR}/info2.json
-echo ""                                 >> ${BUILD_DIR}/info2.json
-
 
 ls -al ${BUILD_DIR}/info.json
 cat ${BUILD_DIR}/info.json
