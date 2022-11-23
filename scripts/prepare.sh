@@ -34,11 +34,20 @@ find . -name "version.go" | while read versionfile; do
 done
 
 
-BUILD_DIR=./build
+BUILD_DIR=$(pwd)/build
 INFO_DIR=${BUILD_DIR}/info
 rm -rf ${BUILD_DIR}
 mkdir -p ${INFO_DIR}
 cd ${INFO_DIR}
+
+
+
+pwd
+ls -al
+ls -al ${BUILD_DIR}
+ls -al ${INFO_DIR}
+
+
 
 cat << EOF > info.json
 {

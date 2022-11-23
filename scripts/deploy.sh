@@ -26,7 +26,7 @@ URL=https://pluto.rsmaxwell.co.uk/archiva/repository/${REPOSITORY}
 
 
 
-BUILD_DIR=./build
+BUILD_DIR=$(pwd)/build
 INFO_DIR=${BUILD_DIR}/info
 
 
