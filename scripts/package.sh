@@ -14,7 +14,7 @@ rm -rf ${PACKAGE_DIR} ${DIST_DIR}
 mkdir -p ${PACKAGE_DIR} ${DIST_DIR}
 
 cd ${PACKAGE_DIR}
-cp ${BUILD_DIR}/* .
+cp -r ${BUILD_DIR}/* .
 
 ls -al
 

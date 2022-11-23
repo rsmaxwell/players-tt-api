@@ -35,7 +35,8 @@ done
 
 
 BUILD_DIR=./build
-INFO_DIR=./${BUILD_DIR}/info
+INFO_DIR=${BUILD_DIR}/info
+rm -rf ${BUILD_DIR}
 mkdir -p ${INFO_DIR}
 cd ${INFO_DIR}
 

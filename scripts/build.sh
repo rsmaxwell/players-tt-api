@@ -3,7 +3,7 @@
 set -x 
 
 BUILD_DIR=./build
-INFO_DIR=./${BUILD_DIR}/info
+INFO_DIR=${BUILD_DIR}/info
 
 go build -o ${BUILD_DIR}/ ./...
 
