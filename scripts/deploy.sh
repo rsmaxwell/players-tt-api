@@ -29,6 +29,7 @@ URL=https://pluto.rsmaxwell.co.uk/archiva/repository/${REPOSITORY}
 BUILD_DIR=./build
 INFO_DIR=${BUILD_DIR}/info
 
+
 . ${INFO_DIR}/version.sh
 
 cat << EOF > ${INFO_DIR}/maven.sh
@@ -38,6 +39,11 @@ PACKAGING=${PACKAGING}
 EOF
 
 
+
+pwd
+ls -al 
+ls -al ${BUILD_DIR}
+ls -al ${INFO_DIR}
 
 
 
