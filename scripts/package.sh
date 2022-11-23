@@ -18,4 +18,4 @@ cp ${BUILD_DIR}/* .
 
 ls -al
 
-zip ${DIST_DIR}/${ZIPFILE} *
+zip -r ${DIST_DIR}/${ZIPFILE} *
