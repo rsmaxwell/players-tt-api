@@ -11,7 +11,14 @@ fi
 
 
 
-VERSION="0.0.$((${BUILD_ID}))"
+if [ -z "${BUILD_ID}" ]; then
+    VERSION="0.0-SNAPSHOT"
+else
+    VERSION="0.0.$((${BUILD_ID}))"
+fi
+
+
+
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
     
 find . -name "version.go" | while read versionfile; do
@@ -26,10 +33,12 @@ find . -name "version.go" | while read versionfile; do
     sed -i "s@<GIT_URL>@${GIT_URL}@g"            ${versionfile}
 done
 
+
 BUILD_DIR=./build
 mkdir -p ${BUILD_DIR}
+cd ${BUILD_DIR}
 
-cat << EOF > ${BUILD_DIR}/info.json
+cat << EOF > info.json
 {
 	"VERSION": "${VERSION}",
 	"BUILD_ID": ${BUILD_ID},
@@ -47,6 +56,10 @@ cat << EOF > ${BUILD_DIR}/info.json
 }
 EOF
 
+cat << EOF > info.sh
+#!/bin/sh
+VERSION=${VERSION}
+EOF
 
-ls -al ${BUILD_DIR}/info.json
-cat ${BUILD_DIR}/info.json
+
+

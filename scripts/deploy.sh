@@ -8,11 +8,18 @@ if [ -z "$1" ]; then
 fi
 PLATFORM="$1"
 
+
+
+# Get the VERSION  
+. ${BUILD_DIR}/info.json
+
+
+
+
 NAME=players-tt-api
 
 GROUPID=com.rsmaxwell.players
 ARTIFACTID=${NAME}-${PLATFORM}
-VERSION=${BUILD_ID:-SNAPSHOT}
 PACKAGING=zip
 
 REPOSITORY=releases
