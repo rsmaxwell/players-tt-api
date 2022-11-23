@@ -10,11 +10,6 @@ PLATFORM="$1"
 
 
 
-# Get the VERSION  
-. ${BUILD_DIR}/info.json
-
-
-
 
 NAME=players-tt-api
 
@@ -25,6 +20,26 @@ PACKAGING=zip
 REPOSITORY=releases
 REPOSITORYID=releases
 URL=https://pluto.rsmaxwell.co.uk/archiva/repository/${REPOSITORY}
+
+
+
+
+
+
+BUILD_DIR=./build
+INFO_DIR=./${BUILD_DIR}/info
+
+. ${INFO_DIR}/version.sh
+
+cat << EOF > ${INFO_DIR}/maven.sh
+GROUPID=${GROUPID}
+ARTIFACTID=${ARTIFACTID}
+PACKAGING=${PACKAGING}
+EOF
+
+
+
+
 
 DIST_DIR=./dist
 cd ${DIST_DIR}

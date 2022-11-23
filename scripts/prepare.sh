@@ -35,8 +35,9 @@ done
 
 
 BUILD_DIR=./build
-mkdir -p ${BUILD_DIR}
-cd ${BUILD_DIR}
+INFO_DIR=./${BUILD_DIR}/info
+mkdir -p ${INFO_DIR}
+cd ${INFO_DIR}
 
 cat << EOF > info.json
 {
@@ -56,8 +57,7 @@ cat << EOF > info.json
 }
 EOF
 
-cat << EOF > info.sh
-#!/bin/sh
+cat << EOF > version.sh
 VERSION=${VERSION}
 EOF
 
