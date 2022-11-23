@@ -9,5 +9,8 @@ go build -o ${BUILD_DIR}/ ./...
 
 cp /etc/os-release ${INFO_DIR}/os-release
 
+
+pwd
+ls -al
 ls -al ${BUILD_DIR}
 ls -al ${INFO_DIR}
