@@ -16,6 +16,4 @@ mkdir -p ${PACKAGE_DIR} ${DIST_DIR}
 cd ${PACKAGE_DIR}
 cp -r ${BUILD_DIR}/* .
 
-ls -al
-
 zip -r ${DIST_DIR}/${ZIPFILE} *

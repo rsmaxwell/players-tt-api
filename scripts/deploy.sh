@@ -40,12 +40,6 @@ EOF
 
 
 
-pwd
-ls -al 
-ls -al ${BUILD_DIR}
-ls -al ${INFO_DIR}
-
-
 
 DIST_DIR=./dist
 cd ${DIST_DIR}

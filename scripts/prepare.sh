@@ -42,13 +42,6 @@ cd ${INFO_DIR}
 
 
 
-pwd
-ls -al
-ls -al ${BUILD_DIR}
-ls -al ${INFO_DIR}
-
-
-
 cat << EOF > info.json
 {
 	"VERSION": "${VERSION}",
@@ -70,6 +63,3 @@ EOF
 cat << EOF > version.sh
 VERSION=${VERSION}
 EOF
-
-
-
