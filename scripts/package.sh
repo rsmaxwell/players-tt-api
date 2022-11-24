@@ -2,13 +2,13 @@
 
 set -x
 
-NAME=players-tt-api
-
-ZIPFILE=${NAME}.zip
-
 BUILD_DIR="$(pwd)/build"
 PACKAGE_DIR="$(pwd)/package"
 DIST_DIR="$(pwd)/dist"
+
+. ${INFO_DIR}/maven.sh
+
+ZIPFILE=${NAME}.zip
 
 rm -rf ${PACKAGE_DIR} ${DIST_DIR}
 mkdir -p ${PACKAGE_DIR} ${DIST_DIR}

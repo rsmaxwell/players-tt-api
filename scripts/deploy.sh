@@ -2,42 +2,14 @@
 
 set -x
 
-if [ -z "$1" ]; then
-    echo "The 'PLATFORM' argument was missing"
-    exit 1
-fi
-PLATFORM="$1"
-
-
-
-
-NAME=players-tt-api
-
-GROUPID=com.rsmaxwell.players
-ARTIFACTID=${NAME}-${PLATFORM}
-PACKAGING=zip
-
-REPOSITORY=releases
-REPOSITORYID=releases
-URL=https://pluto.rsmaxwell.co.uk/archiva/repository/${REPOSITORY}
-
-
-
-
-
 
 BUILD_DIR=$(pwd)/build
+DIST_DIR=$(pwd)/dist
+
 INFO_DIR=${BUILD_DIR}/info
+ZIPFILE=${DIST_DIR}/${NAME}.zip
 
-. ${INFO_DIR}/version.sh
-
-
-
-
-DIST_DIR=./dist
-cd ${DIST_DIR}
-
-ZIPFILE=$(ls ${NAME}*)
+. ${INFO_DIR}/maven.sh
 
 mvn --batch-mode deploy:deploy-file \
 	-DgroupId=${GROUPID} \
@@ -47,12 +19,3 @@ mvn --batch-mode deploy:deploy-file \
 	-Dfile=${ZIPFILE} \
 	-DrepositoryId=${REPOSITORYID} \
 	-Durl=${URL}
-
-
-cd ${INFO_DIR}
-
-cat << EOF > maven.sh
-GROUPID=${GROUPID}
-ARTIFACTID=${ARTIFACTID}
-PACKAGING=${PACKAGING}
-EOF

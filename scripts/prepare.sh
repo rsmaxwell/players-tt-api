@@ -9,6 +9,13 @@ if [ -z "${BRANCH}" ]; then
     exit 1
 fi
 
+if [ -z "$2" ]; then
+    echo "Missing PLATFORM argument"
+    exit 1
+fi
+PLATFORM="$2"
+
+
 
 
 if [ -z "${BUILD_ID}" ]; then
@@ -63,7 +70,26 @@ cat << EOF > info.json
 }
 EOF
 
-cat << EOF > version.sh
+
+NAME=players-tt-api
+
+GROUPID=com.rsmaxwell.players
+ARTIFACTID=${NAME}-${PLATFORM}
+PACKAGING=zip
+
+REPOSITORY=releases
+REPOSITORYID=releases
+URL=https://pluto.rsmaxwell.co.uk/archiva/repository/${REPOSITORY}
+
+
+cat << EOF > maven.sh
+NAME=${NAME}
+GROUPID=${GROUPID}
+ARTIFACTID=${ARTIFACTID}
+PACKAGING=${PACKAGING}
 VERSION=${VERSION}
+REPOSITORY=${REPOSITORY}
+REPOSITORYID=${REPOSITORYID}
+URL=${URL}
 EOF
 
