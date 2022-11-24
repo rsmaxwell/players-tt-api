@@ -62,7 +62,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = createDatabase(cfg.Database.DatabaseName)
+	err = createDatabase()
 	if err != nil {
 		f.Errorf("Error creating database: %s", cfg.Database.DatabaseName)
 		os.Exit(1)
@@ -76,7 +76,7 @@ func main() {
 	os.Exit(0)
 }
 
-func createDatabase(databaseName string) error {
+func createDatabase() error {
 	f := functionCreateDatabase
 	f.DebugVerbose("")
 
@@ -102,10 +102,30 @@ func createDatabase(databaseName string) error {
 		f.DebugInfo("Database already exists")
 	} else {
 		f.DebugInfo("Create the database: %s", cfg.Database.DatabaseName)
-		sqlStatement := fmt.Sprintf("CREATE DATABASE %s", databaseName)
+		sqlStatement := fmt.Sprintf("CREATE DATABASE %s", cfg.Database.DatabaseName)
 		_, err := db.Exec(sqlStatement)
 		if err != nil {
-			message := fmt.Sprintf("Could not create database: %s", databaseName)
+			message := fmt.Sprintf("Could not create database: %s", cfg.Database.DatabaseName)
+			f.Errorf(message)
+			f.DumpSQLError(err, message, sqlStatement)
+			return err
+		}
+
+		f.DebugInfo("Create the first user: %s", cfg.Database.UserName)
+		sqlStatement = fmt.Sprintf("CREATE USER %s WITH ENCRYPTED PASSWORD '%s';", cfg.Database.UserName, cfg.Database.Password)
+		_, err = db.Exec(sqlStatement)
+		if err != nil {
+			message := fmt.Sprintf("Could not create database: %s", cfg.Database.UserName)
+			f.Errorf(message)
+			f.DumpSQLError(err, message, sqlStatement)
+			return err
+		}
+
+		f.DebugInfo("Grant privilages on database: %s to %s", cfg.Database.DatabaseName, cfg.Database.UserName)
+		sqlStatement = fmt.Sprintf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s;", cfg.Database.DatabaseName, cfg.Database.UserName)
+		_, err = db.Exec(sqlStatement)
+		if err != nil {
+			message := fmt.Sprintf("Could not grant privilages on database: %s to %s", cfg.Database.DatabaseName, cfg.Database.UserName)
 			f.Errorf(message)
 			f.DumpSQLError(err, message, sqlStatement)
 			return err
