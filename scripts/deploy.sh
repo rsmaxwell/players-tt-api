@@ -31,12 +31,6 @@ INFO_DIR=${BUILD_DIR}/info
 
 . ${INFO_DIR}/version.sh
 
-cat << EOF > ${INFO_DIR}/maven.sh
-GROUPID=${GROUPID}
-ARTIFACTID=${ARTIFACTID}
-PACKAGING=${PACKAGING}
-EOF
-
 
 
 
@@ -53,3 +47,15 @@ mvn --batch-mode deploy:deploy-file \
 	-Dfile=${ZIPFILE} \
 	-DrepositoryId=${REPOSITORYID} \
 	-Durl=${URL}
+
+
+cd ${INFO_DIR}
+
+cat << EOF > maven.sh
+GROUPID=${GROUPID}
+ARTIFACTID=${ARTIFACTID}
+PACKAGING=${PACKAGING}
+EOF
+
+pwd
+ls -al 
