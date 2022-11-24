@@ -17,3 +17,8 @@ cd ${PACKAGE_DIR}
 cp -r ${BUILD_DIR}/* .
 
 zip -r ${DIST_DIR}/${ZIPFILE} *
+
+pwd
+ls -al 
+ls -al ${BUILD_DIR}
+ls -al ${PACKAGE_DIR}

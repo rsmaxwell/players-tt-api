@@ -30,6 +30,15 @@ BUILD_DIR=$(pwd)/build
 INFO_DIR=${BUILD_DIR}/info
 
 
+
+pwd
+ls -al 
+ls -al ${BUILD_DIR}
+ls -al ${INFO_DIR}
+
+
+
+
 . ${INFO_DIR}/version.sh
 
 cat << EOF > ${INFO_DIR}/maven.sh
