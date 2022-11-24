@@ -5,6 +5,7 @@ set -x
 BUILD_DIR="$(pwd)/build"
 PACKAGE_DIR="$(pwd)/package"
 DIST_DIR="$(pwd)/dist"
+INFO_DIR=${BUILD_DIR}/info
 
 . ${INFO_DIR}/maven.sh
 
