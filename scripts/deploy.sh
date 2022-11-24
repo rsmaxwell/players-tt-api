@@ -2,14 +2,13 @@
 
 set -x
 
-
 BUILD_DIR=$(pwd)/build
 DIST_DIR=$(pwd)/dist
-
 INFO_DIR=${BUILD_DIR}/info
-ZIPFILE=${DIST_DIR}/${NAME}.zip
 
 . ${INFO_DIR}/maven.sh
+
+ZIPFILE=${DIST_DIR}/${NAME}.zip
 
 mvn --batch-mode deploy:deploy-file \
 	-DgroupId=${GROUPID} \
