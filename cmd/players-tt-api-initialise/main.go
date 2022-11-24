@@ -123,7 +123,7 @@ func createDatabase() error {
 	}
 
 	if found {
-		f.DebugInfo("Database already exists")
+		f.DebugInfo("User '%s' already exists", cfg.Database.UserName)
 	} else {
 		f.DebugInfo("Create the first user: %s", cfg.Database.UserName)
 		sqlStatement := fmt.Sprintf("CREATE USER %s WITH ENCRYPTED PASSWORD '%s';", cfg.Database.UserName, cfg.Database.Password)
@@ -540,7 +540,7 @@ func userExists(db *sql.DB) (bool, error) {
 	row := db.QueryRow(sqlStatement)
 
 	err := row.Scan(&count)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		message := "problem checking the user exists"
 		f.Errorf(message + ": " + err.Error())
 		f.DumpError(err, message)
