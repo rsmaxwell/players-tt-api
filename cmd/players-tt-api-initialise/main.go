@@ -31,6 +31,7 @@ var (
 	functionCreateTables           = debug.NewFunction(pkg, "createTables")
 	functionCreateAdminUser        = debug.NewFunction(pkg, "createAdminUser")
 	functionDatabaseExists         = debug.NewFunction(pkg, "databaseExists")
+	functionUserExists             = debug.NewFunction(pkg, "userExists")
 )
 
 var cfg *config.Config
@@ -85,17 +86,17 @@ func createDatabase() error {
 	db, err := connect(cfg, connectionString)
 	if err != nil {
 		f.Errorf("Error connecting to postgres: %s", err.Error())
-		os.Exit(1)
+		return err
 	}
 	defer db.Close()
 
 	f.DebugInfo("Check database exists")
-	found, err := databaseExists(db, cfg.Database.DatabaseName)
+	found, err := databaseExists(db)
 	if err != nil {
 		message := fmt.Sprintf("Problem checking the database '%s'", cfg.Database.DatabaseName)
 		f.Errorf(message)
 		f.DumpError(err, message)
-		os.Exit(1)
+		return err
 	}
 
 	if found {
@@ -110,9 +111,22 @@ func createDatabase() error {
 			f.DumpSQLError(err, message, sqlStatement)
 			return err
 		}
+	}
 
+	f.DebugInfo("Check user exists")
+	found, err = userExists(db)
+	if err != nil {
+		message := fmt.Sprintf("Problem checking the database '%s'", cfg.Database.DatabaseName)
+		f.Errorf(message)
+		f.DumpError(err, message)
+		return err
+	}
+
+	if found {
+		f.DebugInfo("Database already exists")
+	} else {
 		f.DebugInfo("Create the first user: %s", cfg.Database.UserName)
-		sqlStatement = fmt.Sprintf("CREATE USER %s WITH ENCRYPTED PASSWORD '%s';", cfg.Database.UserName, cfg.Database.Password)
+		sqlStatement := fmt.Sprintf("CREATE USER %s WITH ENCRYPTED PASSWORD '%s';", cfg.Database.UserName, cfg.Database.Password)
 		_, err = db.Exec(sqlStatement)
 		if err != nil {
 			message := fmt.Sprintf("Could not create database: %s", cfg.Database.UserName)
@@ -120,16 +134,16 @@ func createDatabase() error {
 			f.DumpSQLError(err, message, sqlStatement)
 			return err
 		}
+	}
 
-		f.DebugInfo("Grant privilages on database: %s to %s", cfg.Database.DatabaseName, cfg.Database.UserName)
-		sqlStatement = fmt.Sprintf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s;", cfg.Database.DatabaseName, cfg.Database.UserName)
-		_, err = db.Exec(sqlStatement)
-		if err != nil {
-			message := fmt.Sprintf("Could not grant privilages on database: %s to %s", cfg.Database.DatabaseName, cfg.Database.UserName)
-			f.Errorf(message)
-			f.DumpSQLError(err, message, sqlStatement)
-			return err
-		}
+	f.DebugInfo("Grant privilages on database: %s to %s", cfg.Database.DatabaseName, cfg.Database.UserName)
+	sqlStatement := fmt.Sprintf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s;", cfg.Database.DatabaseName, cfg.Database.UserName)
+	_, err = db.Exec(sqlStatement)
+	if err != nil {
+		message := fmt.Sprintf("Could not grant privilages on database: %s to %s", cfg.Database.DatabaseName, cfg.Database.UserName)
+		f.Errorf(message)
+		f.DumpSQLError(err, message, sqlStatement)
+		return err
 	}
 
 	return nil
@@ -497,17 +511,37 @@ func createAdminUser(ctx context.Context, db *sql.DB) error {
 	return nil
 }
 
-func databaseExists(db *sql.DB, databaseName string) (bool, error) {
+func databaseExists(db *sql.DB) (bool, error) {
 	f := functionDatabaseExists
 	f.DebugVerbose("")
 
-	sqlStatement := "SELECT COUNT(*) FROM pg_catalog.pg_database WHERE datname = '" + databaseName + "'"
-	row := db.QueryRow(sqlStatement)
-
 	var count int
+
+	sqlStatement := fmt.Sprintf("SELECT COUNT(*) FROM pg_catalog.pg_database WHERE datname = '%s'", cfg.Database.DatabaseName)
+	row := db.QueryRow(sqlStatement)
 	err := row.Scan(&count)
 	if err != nil {
 		message := "problem checking the database exists"
+		f.Errorf(message + ": " + err.Error())
+		f.DumpError(err, message)
+		return false, err
+	}
+
+	return (count > 0), nil
+}
+
+func userExists(db *sql.DB) (bool, error) {
+	f := functionUserExists
+	f.DebugVerbose("")
+
+	var count int
+
+	sqlStatement := fmt.Sprintf("SELECT 1 FROM pg_roles WHERE rolname='%s'", cfg.Database.UserName)
+	row := db.QueryRow(sqlStatement)
+
+	err := row.Scan(&count)
+	if err != nil {
+		message := "problem checking the user exists"
 		f.Errorf(message + ": " + err.Error())
 		f.DumpError(err, message)
 		return false, err
