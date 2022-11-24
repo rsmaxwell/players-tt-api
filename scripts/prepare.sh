@@ -38,12 +38,6 @@ BUILD_DIR=$(pwd)/build
 INFO_DIR=${BUILD_DIR}/info
 
 
-pwd
-ls -al 
-ls -al ${BUILD_DIR}
-ls -al ${INFO_DIR}
-
-
 
 rm -rf ${BUILD_DIR}
 mkdir -p ${INFO_DIR}
@@ -72,10 +66,4 @@ EOF
 cat << EOF > version.sh
 VERSION=${VERSION}
 EOF
-
-
-pwd
-ls -al 
-ls -al ${BUILD_DIR}
-ls -al ${INFO_DIR}
 
