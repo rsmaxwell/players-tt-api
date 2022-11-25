@@ -77,8 +77,8 @@ func Open(configFileName string) (*Config, error) {
 	if err != nil {
 		d := f.DumpError(err, "could not read config file: %s", configFileName)
 
-		stats, err := os.Stat(configFileName)
-		if err != nil {
+		stats, err2 := os.Stat(configFileName)
+		if err2 != nil {
 			d.AddString("fileinfo.txt", fmt.Sprintf("%s\n", err))
 		} else {
 			d.AddObject("fileinfo.json", stats)
