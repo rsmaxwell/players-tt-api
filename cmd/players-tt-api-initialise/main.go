@@ -86,6 +86,7 @@ func createDatabase() error {
 	db, err := connect(cfg, connectionString)
 	if err != nil {
 		f.Errorf("Error connecting to postgres: %s", err.Error())
+		f.Errorf("connectionString: %s", connectionString)
 		return err
 	}
 	defer db.Close()
