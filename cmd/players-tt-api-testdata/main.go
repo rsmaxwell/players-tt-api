@@ -129,9 +129,20 @@ func makePeopleTx(db *sql.DB) (map[int]int, error) {
 			os.Exit(1)
 		}
 
+		ctx := context.Background()
+
+		// Create a new context, and begin a transaction
+		tx, err := db.BeginTx(ctx, nil)
+		if err != nil {
+			message := "Could not begin a new transaction"
+			f.DumpError(err, message)
+			os.Exit(1)
+		}
+		defer model.EndTransaction(ctx, tx, db, err)
+
 		p.Status = r.Status
 
-		err = p.SavePerson(db)
+		err = p.SavePersonTx(ctx, db)
 		if err != nil {
 			message := fmt.Sprintf("Could not save person: firstName: %s, lastname: %s, email: %s", p.FirstName, p.LastName, p.Email)
 			f.Errorf(message)
@@ -150,6 +161,15 @@ func makePeopleTx(db *sql.DB) (map[int]int, error) {
 		f.DebugInfo("    Password:  %s", r.Data.Password)
 		f.DebugInfo("    Hash:      %s", p.Hash)
 		f.DebugInfo("    Status:    %s", p.Status)
+
+		fix := true
+		_, err = p.CheckConistencyPerson(ctx, db, fix)
+		if err != nil {
+			message := fmt.Sprintf("Inconsistent data: firstName: %s, lastname: %s, email: %s", p.FirstName, p.LastName, p.Email)
+			f.Errorf(message)
+			f.DumpError(err, message)
+			os.Exit(1)
+		}
 	}
 
 	return peopleIDs, nil
