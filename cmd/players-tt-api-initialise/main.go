@@ -82,7 +82,7 @@ func createDatabase() error {
 	f.DebugVerbose("")
 
 	f.DebugInfo("Connect to postgres (without database)")
-	connectionString := cfg.ConnectionStringBasic()
+	connectionString := fmt.Sprintf("%s/%s", cfg.ConnectionStringBasic(), "postgres")
 	db, err := connect(cfg, connectionString)
 	if err != nil {
 		f.Errorf("Error connecting to postgres: %s", err.Error())
@@ -154,7 +154,7 @@ func createTablesInDatabase() error {
 	f := functionCreateTablesInDatabase
 
 	f.DebugInfo("Connect to postgres (with database)")
-	connectionString := fmt.Sprintf("%s/%s", cfg.ConnectionStringBasic(), cfg.Database.DatabaseName)
+	connectionString := cfg.ConnectionString()
 	db, err := connect(cfg, connectionString)
 	if err != nil {
 		return err

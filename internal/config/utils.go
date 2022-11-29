@@ -70,5 +70,5 @@ func (c *Config) ConnectionString() string {
 
 // ConnectionStringBasic returns the string used to connect to the database
 func (c *Config) ConnectionStringBasic() string {
-	return fmt.Sprintf("%s://%s:%s@%s/%s", c.Database.Scheme, c.Database.UserName, c.Database.Password, c.Database.Host, "postgres")
+	return fmt.Sprintf("%s://%s:%s@%s", c.Database.Scheme, c.Database.UserName, c.Database.Password, c.Database.Host)
 }
